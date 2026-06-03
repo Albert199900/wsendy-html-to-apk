@@ -36,7 +36,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '17'
+        version: '17'
 
     - name: Weka na Kusanidi Injini ya Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -49,21 +49,31 @@ jobs:
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
         sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
-    # HAPA MFUMO UNASAFISHA RUHUSA ZOTE NYETI KAMA UKICHAGUA 'NO' ILI GOOGLE ISIBLOKI APP YAKO
-    - name: Kudhibiti Ruhusa za SMS (Anti-Block Filter)
+    # SULUHISHO KUU: Futa kodi zote za SMS kwenye Manifest, Java, na HTML kwa mpigo!
+    - name: Kudhibiti Ruhusa na Kodi za SMS (Anti-Block Filter)
       if: ${{ github.event.inputs.andika_sms == 'no' }}
       run: |
-        # Futa ruhusa za SMS na Contacts kwenye Manifest
+        # 1. Futa kwenye Manifest
         sed -i '/SMS/d' app/src/main/AndroidManifest.xml
         sed -i '/CONTACTS/d' app/src/main/AndroidManifest.xml
-        # Futa na mifumo ya Default SMS App ili kuondoa bango la 'Financial Fraud'
         sed -i '/SmsReceiver/d' app/src/main/AndroidManifest.xml
         sed -i '/MmsReceiver/d' app/src/main/AndroidManifest.xml
         sed -i '/HeadlessSmsSendService/d' app/src/main/AndroidManifest.xml
+        
+        # 2. Futa kodi zote zilizopo kati ya alama za // SMS_START na // SMS_END kwenye Java
+        sed -i '/\/\/ SMS_START/,/\/\/ SMS_END/d' app/src/main/java/com/example/hybridapp/MainActivity.java
+        
+        # 3. Futa kodi zote zilizopo kati ya na kwenye HTML
+        sed -i '//,//d' app/src/main/assets/index.html
 
     - name: Weka Mipangilio ya AndroidX
       run: |
         echo "android.useAndroidX=true" >> gradle.properties
+
+    - name: Pakua Library ya jsPDF kwa ajili ya PDF Offline Converter
+      run: |
+        mkdir -p app/src/main/assets
+        curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
