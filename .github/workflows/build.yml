@@ -42,8 +42,10 @@ jobs:
     - name: Badilisha Jina la App, Link na ID ya Kipekee
       run: |
         sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
-        sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
+        
+        # IMEBADILISHWA HAPA: Sasa inaingiza link yako ya mtandao ndani ya index.html
+        sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/assets/index.html
 
     - name: Weka Mipangilio ya AndroidX
       run: |
@@ -52,7 +54,6 @@ jobs:
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
 
-    # SEHEMU ILIYOBORESHWA: Inachukua jina la icon kutoka kwenye input ya GitHub dynamically
     - name: Tengeneza Icon ya App Kiotomatiki
       env:
         PASSED_ICON_TEXT: ${{ github.event.inputs.icon_text }}
@@ -65,12 +66,10 @@ jobs:
         img = Image.new('RGB', (512, 512))
         draw = ImageDraw.Draw(img)
 
-        # Rangi tatu (Njano, Blue, Nyekundu)
         draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   
         draw.rectangle([0, 170, 512, 342], fill='#0066CC') 
         draw.rectangle([0, 342, 512, 512], fill='#CC3333') 
 
-        # Kibandiko cheusi
         draw.rectangle([20, 210, 492, 310], fill='#111111')
 
         try:
@@ -78,7 +77,6 @@ jobs:
         except:
             font = ImageFont.load_default()
 
-        # Inasoma jina uliloandika kwenye GitHub input
         text = os.environ.get('PASSED_ICON_TEXT', 'free wsendy')
         draw.text((256, 260), text, fill='#FFFFFF', anchor='mm', font=font)
         img.save('app/src/main/res/drawable/ic_launcher.png')
