@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.example.hybridapp'
-    compileSdk 34 // Imepandishwa kuwa 34
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.hybridapp"
-        minSdk 24        // 24 inamaanisha kuanzia Android 7.0 (Nougat)
-        targetSdk 34     // 34 inamaanisha inalenga Android 14 (Hadi matoleo ya sasa)
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -20,4 +20,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+// SEHEMU MPYA: Hapa ndipo tunapoiambia Android ipakue maktaba ya AndroidX
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
