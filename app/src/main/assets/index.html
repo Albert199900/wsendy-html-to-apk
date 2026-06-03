@@ -3,15 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ukurasa wa Offline</title>
+    <title>SMS Offline Hub</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px 20px; background-color: #f4f4f9; color: #333; }
-        h1 { color: #ff3b30; }
-        p { font-size: 18px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-top: 10px;
+        }
+        .status-badge {
+            background-color: #ffebe9;
+            color: #ff3b30;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+        p.subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: #f8fafc;
+        }
+        input:focus, textarea:focus {
+            border-color: #007aff;
+            outline: none;
+            background-color: #fff;
+        }
+        textarea {
+            resize: none;
+            height: 100px;
+        }
+        .btn-tuma {
+            width: 100%;
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 122, 255, 0.2);
+            transition: background 0.2s;
+        }
+        .btn-tuma:active {
+            background-color: #0056b3;
+        }
+        .templates {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .templates h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .template-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background-color: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .tag:active {
+            background-color: #ddd;
+        }
     </style>
 </head>
 <body>
-    <h1>Hauko kwenye Mtandao!</h1>
-    <p>Huu ni ukurasa wa ndani ya App unaofanya kazi <strong>Offline</strong> bila kuhitaji bando.</p>
+
+    <div class="container">
+        <div class="status-badge">Njia ya Offline (Hakuna Mtandao)</div>
+        <h2>Ujumbe wa SMS</h2>
+        <p class="subtitle">Tuma ujumbe wa kawaida bila kutumia internet.</p>
+
+        <!-- Sehemu ya kuweka namba -->
+        <div class="form-group">
+            <label for="namba">Namba ya Simu:</label>
+            <input type="tel" id="namba" placeholder="Mfano: 0712345678" required>
+        </div>
+
+        <!-- Sehemu ya kuandika ujumbe -->
+        <div class="form-group">
+            <label for="ujumbe">Ujumbe wako:</label>
+            <textarea id="ujumbe" placeholder="Andika ujumbe wako hapa..." required></textarea>
+        </div>
+
+        <!-- Kitufe cha kutuma -->
+        <button class="btn-tuma" onclick="tumaSMS()">Fungua SMS Tuma</button>
+
+        <!-- Ujumbe wa Haraka (Templates) -->
+        <div class="templates">
+            <h3>Ujumbe wa Haraka (Gusa utumie):</h3>
+            <div class="template-tags">
+                <span class="tag" onclick="wekaUjumbe('Nipigie tafadhali, niko offline.')">Nipigie</span>
+                <span class="tag" onclick="wekaUjumbe('Nimefika salama mahali nilipokuwa naenda.')">Nimefika Salama</span>
+                <span class="tag" onclick="wekaUjumbe('Niko njiani nakuja sasa hivi.')">Niko Njiani</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kazi ya kuhamishia ujumbe wa haraka kwenye sanduku la maandishi
+        function wekaUjumbe(maandishi) {
+            document.getElementById('ujumbe').value = maandishi;
+        }
+
+        // Kazi kuu ya kutuma SMS
+        function tumaSMS() {
+            var namba = document.getElementById('namba').value.trim();
+            var ujumbe = document.getElementById('ujumbe').value.trim();
+
+            if (namba === "" || ujumbe === "") {
+                alert("Tafadhali jaza namba ya simu na ujumbe kwanza!");
+                return;
+            }
+
+            // Hapa inatengeneza link ya ki-android ya kuanzisha SMS offline
+            // Format: sms:namba?body=ujumbe
+            var smsLink = "sms:" + namba + "?body=" + encodeURIComponent(ujumbe);
+            
+            // Inafungua app ya SMS ya simu papo hapo
+            window.location.href = smsLink;
+        }
+    </script>
+
 </body>
 </html>
