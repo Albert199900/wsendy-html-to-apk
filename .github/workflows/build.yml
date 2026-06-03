@@ -1,4 +1,4 @@
-name: Tengeneza APK (Debug Auto-Sign)
+name: Tengeneza APK (Custom Icon Text)
 
 on:
   workflow_dispatch:
@@ -11,6 +11,10 @@ on:
         description: 'Weka ID ya kipekee ili zikae nyingi kwenye simu (Mfano: com.wsendy.app1)'
         required: true
         default: 'com.wsendy.app1'
+      icon_text:
+        description: 'Andika maandishi ya kwenye Icon (Mfano: free wsendy)'
+        required: true
+        default: 'free wsendy'
       fallback_url:
         description: 'Weka Link ya kufunguka kukiwa na Mtandao'
         required: true
@@ -37,13 +41,8 @@ jobs:
 
     - name: Badilisha Jina la App, Link na ID ya Kipekee
       run: |
-        # Badili jina la App kwenye strings.xml
         sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
-        
-        # Badili Link ya mtandao kwenye MainActivity.java
         sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
-        
-        # Badilisha Application ID kwa usahihi
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
 
     - name: Weka Mipangilio ya AndroidX
@@ -53,7 +52,10 @@ jobs:
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
 
-    - name: Tengeneza Icon ya App Kiotomatiki (Njano, Blue, Nyekundu & free wsendy)
+    # SEHEMU ILIYOBORESHWA: Inachukua jina la icon kutoka kwenye input ya GitHub dynamically
+    - name: Tengeneza Icon ya App Kiotomatiki
+      env:
+        PASSED_ICON_TEXT: ${{ github.event.inputs.icon_text }}
       run: |
         mkdir -p app/src/main/res/drawable
         python -c "
@@ -63,10 +65,12 @@ jobs:
         img = Image.new('RGB', (512, 512))
         draw = ImageDraw.Draw(img)
 
+        # Rangi tatu (Njano, Blue, Nyekundu)
         draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   
         draw.rectangle([0, 170, 512, 342], fill='#0066CC') 
         draw.rectangle([0, 342, 512, 512], fill='#CC3333') 
 
+        # Kibandiko cheusi
         draw.rectangle([20, 210, 492, 310], fill='#111111')
 
         try:
@@ -74,11 +78,12 @@ jobs:
         except:
             font = ImageFont.load_default()
 
-        draw.text((256, 260), 'free wsendy', fill='#FFFFFF', anchor='mm', font=font)
+        # Inasoma jina uliloandika kwenye GitHub input
+        text = os.environ.get('PASSED_ICON_TEXT', 'free wsendy')
+        draw.text((256, 260), text, fill='#FFFFFF', anchor='mm', font=font)
         img.save('app/src/main/res/drawable/ic_launcher.png')
         "
 
-    # HAPA NDIPO MFUMO UNAPOJISAINI WENYÈWE KIOTOMATIKI KAMA DEBUG
     - name: Tengeneza na Kusaini APK (Build Debug)
       run: gradle assembleDebug
 
