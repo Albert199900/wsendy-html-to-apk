@@ -2,24 +2,27 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mbio za Magari 4K - Ngazi (Levels)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mbio za Magari 4K - Sauti na Batani za Simu</title>
     <style>
         body {
             margin: 0;
             background: radial-gradient(circle, #1e272e, #0f141c);
             font-family: 'Poppins', sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             color: white;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
         }
         #gameContainer {
             position: relative;
-            width: 100%;
-            max-width: 450px;
+            width: 95%;
+            max-width: 420px;
             aspect-ratio: 2 / 3;
             box-shadow: 0 25px 50px rgba(0,0,0,0.8);
             border-radius: 16px;
@@ -31,6 +34,34 @@
             height: 100%;
             background: #2c3e50;
             display: block;
+        }
+        /* Mfumo wa Batani za Simu */
+        #mobileControls {
+            display: flex;
+            justify-content: space-between;
+            width: 95%;
+            max-width: 420px;
+            margin-top: 15px;
+            gap: 20px;
+        }
+        .controlBtn {
+            flex: 1;
+            background: linear-gradient(135deg, #341f97, #5f27cd);
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 20px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            touch-action: manipulation; /* Inazuia zoom ya simu wakati wa kugusa haraka */
+            transition: background 0.1s;
+        }
+        .controlBtn:active {
+            background: linear-gradient(135deg, #5f27cd, #341f97);
+            transform: scale(0.95);
         }
         #gameOverScreen {
             position: absolute;
@@ -47,7 +78,7 @@
             backdrop-filter: blur(10px);
             z-index: 20;
         }
-        button {
+        #startBtn, #restartBtn {
             background: linear-gradient(135deg, #ff4757, #ff6b81);
             border: none;
             padding: 15px 35px;
@@ -58,17 +89,12 @@
             cursor: pointer;
             margin-top: 20px;
             box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4);
-            transition: 0.3s ease;
-        }
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(255, 71, 87, 0.6);
         }
         .scoreText {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 18px;
+            top: 15px;
+            left: 15px;
+            font-size: 16px;
             font-weight: 800;
             text-shadow: 0 4px 8px rgba(0,0,0,0.5);
             background: rgba(0, 0, 0, 0.6);
@@ -76,38 +102,44 @@
             border-radius: 20px;
             backdrop-filter: blur(5px);
             z-index: 10;
-            letter-spacing: 1px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
-        .levelHighlight {
-            color: #ffa502;
-        }
+        .levelHighlight { color: #ffa502; }
         h1 {
-            font-size: 40px;
+            font-size: 36px;
             background: linear-gradient(45deg, #ff4757, #ffa502);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
 <div id="gameContainer">
-    <!-- Sehemu ya kuonyesha Ngazi na Alama zote kwa pamoja -->
     <div class="scoreText">
         <div>NGAZI: <span id="level" class="levelHighlight">1</span></div>
         <div>|</div>
         <div>ALAMA: <span id="score">0</span></div>
     </div>
     <canvas id="gameCanvas" width="1200" height="1800"></canvas>
+    
     <div id="gameOverScreen">
-        <h1>MCHEZO UMEKWISHA</h1>
-        <p style="font-size: 22px; margin: 15px 0; color: #ced6e0;">Ngazi Uliyofikia: <span id="finalLevel" style="color: #ffa502; font-weight: bold;">1</span></p>
-        <p style="font-size: 22px; margin: 5px 0; color: #ced6e0;">Alama Zako: <span id="finalScore" style="color: #2ed573; font-weight: bold; font-size: 28px;">0</span></p>
-        <button onclick="restartGame()">Cheza Tena</button>
+        <h1 id="gameStatusTitle">MBIO ZA MAGARI</h1>
+        <p id="gameStatusDesc" style="font-size: 18px; color: #ced6e0; margin: 10px 0; text-align: center;">Gusa kitufe hapa chini kuanza</p>
+        <p id="scoreBreakdown" style="font-size: 20px; margin: 10px 0; color: #ced6e0; display: none;">
+            Ngazi: <span id="finalLevel" style="color: #ffa502; font-weight: bold;">1</span> | 
+            Alama: <span id="finalScore" style="color: #2ed573; font-weight: bold;">0</span>
+        </p>
+        <button id="startBtn" onclick="restartGame()">Anza Mchezo</button>
     </div>
+</div>
+
+<div id="mobileControls">
+    <div class="controlBtn" id="leftBtn">◀ KUSHOTO</div>
+    <div class="controlBtn" id="rightBtn">KULIA ▶</div>
 </div>
 
 <script>
@@ -118,13 +150,17 @@
     const finalScoreEl = document.getElementById('finalScore');
     const finalLevelEl = document.getElementById('finalLevel');
     const gameOverScreen = document.getElementById('gameOverScreen');
+    const gameStatusTitle = document.getElementById('gameStatusTitle');
+    const gameStatusDesc = document.getElementById('gameStatusDesc');
+    const scoreBreakdown = document.getElementById('scoreBreakdown');
+    const startBtn = document.getElementById('startBtn');
 
     const player = {
         x: 525,
         y: 1400,
         width: 150,
         height: 260,
-        speed: 20,
+        speed: 22,
         color1: '#ff4757',
         color2: '#ff6b81'
     };
@@ -134,27 +170,102 @@
     let gameSpeed = 14;
     let score = 0;
     let level = 1;
-    let isGameOver = false;
+    let isGameOver = true; // Unaanza ukiwa umesimama kwanza ili kuruhusu mifumo ya sauti kuwaka
     let roadLinesY = 0;
-    
-    // Kifaa cha kuhesabu muda wa kuonyesha nembo ya LEVEL UP kwenye kioo
     let levelUpTimer = 0;
 
+    // MFUMO WA SAUTI (Web Audio API Synthesizer)
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playLevelUpSound() {
+        initAudio();
+        if (!audioCtx) return;
+        
+        let now = audioCtx.currentTime;
+        // Sauti ya kwanza ya chini, kisha ya juu haraka (Arcade style)
+        [440, 554, 659, 880].forEach((freq, index) => {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + (index * 0.08));
+            
+            gain.gain.setValueAtTime(0.2, now + (index * 0.08));
+            gain.gain.linearRampToValueAtTime(0, now + (index * 0.08) + 0.15);
+            
+            osc.start(now + (index * 0.08));
+            osc.stop(now + (index * 0.08) + 0.15);
+        });
+    }
+
+    function playCrashSound() {
+        initAudio();
+        if (!audioCtx) return;
+
+        let now = audioCtx.currentTime;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(30, now + 0.6); // Sauti inashuka chini kama mlipuko
+
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.6);
+
+        osc.start(now);
+        osc.stop(now + 0.6);
+    }
+
+    // Kusikiliza Keyboard (PC)
     window.addEventListener('keydown', (e) => keys[e.key] = true);
     window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-    // Kazi ya kubadilisha rangi za pembeni kulingana na Ngazi (Level Theme)
+    // KUSIKILIZA BATANI ZA SIMU (Touch na Mouse Events)
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+
+    function setupMobileButton(button, keyName) {
+        // Kwa ajili ya Simu (Touch)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudio(); // Washa mfumo wa sauti mara ya kwanza mchezaji anapogusa skrini
+            keys[keyName] = true;
+        });
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys[keyName] = false;
+        });
+
+        // Kwa ajili ya Kompyuta (Kama mtu anataka kubonyeza kwa Mouse)
+        button.addEventListener('mousedown', () => { initAudio(); keys[keyName] = true; });
+        button.addEventListener('mouseup', () => keys[keyName] = false);
+        button.addEventListener('mouseleave', () => keys[keyName] = false);
+    }
+
+    setupMobileButton(leftBtn, 'ArrowLeft');
+    setupMobileButton(rightBtn, 'ArrowRight');
+
     function getEnvironmentColor() {
-        if (level === 1) return '#05c46b'; // Kijani (Mizunguko ya kawaida)
-        if (level === 2) return '#eccc68'; // Jangwa la Dhahabu (Kasi inaongezeka)
-        if (level === 3) return '#0575e6'; // Usiku wa Neon / Jiji la Cyberpunk
-        return '#706fd3'; // Rangi ya Kichawi / Volkano ya Hatari sana (Level 4+)
+        if (level === 1) return '#05c46b'; // Kijani
+        if (level === 2) return '#eccc68'; // Jangwa
+        if (level === 3) return '#0575e6'; // Neon Usiku
+        return '#706fd3'; // Volkano (Level 4+)
     }
 
     function spawnEnemy() {
-        // Kuongeza idadi ya magari yanayotokea kadiri ngazi inavyokuwa juu
         let maxEnemies = level >= 3 ? 5 : 4;
-        let spawnRate = 0.02 + (level * 0.005); // Maadui wanatokea haraka zaidi
+        let spawnRate = 0.02 + (level * 0.005);
 
         if (Math.random() < spawnRate && enemies.length < maxEnemies) {
             const lanes = [130, 390, 650, 910];
@@ -204,14 +315,14 @@
                 score += 10;
                 scoreEl.innerText = score;
                 
-                // MFUMO WA NGAZI: Kila alama 100 mchezaji anapanda ngazi
                 let targetLevel = Math.floor(score / 100) + 1;
                 if (targetLevel > level) {
                     level = targetLevel;
                     levelEl.innerText = level;
-                    gameSpeed += 3.5; // Ongeza kasi ya barabara kwa kasi zaidi
-                    player.speed += 1.5; // Ongeza wepesi wa gari la mchezaji pia
-                    levelUpTimer = 90; // Washa dhihirisho la maneno kwa sekunde 1.5
+                    gameSpeed += 3.5;
+                    player.speed += 1.5;
+                    levelUpTimer = 90;
+                    playLevelUpSound(); // Inapiga sauti ya kupanda ngazi!
                 }
             }
         }
@@ -238,20 +349,17 @@
         ctx.shadowBlur = 0;
         ctx.shadowOffsetY = 0;
 
-        // Kioo
         ctx.fillStyle = '#2c3e50';
         ctx.beginPath();
         ctx.roundRect(car.x + 18, car.y + 50, car.width - 36, 45, 10);
         ctx.fill();
 
-        // Magurudumu
         ctx.fillStyle = '#1e272e';
         ctx.fillRect(car.x - 12, car.y + 40, 12, 50);
         ctx.fillRect(car.x + car.width, car.y + 40, 12, 50);
         ctx.fillRect(car.x - 12, car.y + 170, 12, 50);
         ctx.fillRect(car.x + car.width, car.y + 170, 12, 50);
 
-        // Taa Kuu
         ctx.save();
         ctx.shadowColor = isPlayer ? '#fffa65' : '#ff4d4d';
         ctx.shadowBlur = 30;
@@ -264,21 +372,17 @@
     }
 
     function draw() {
-        // 1. Lami
         ctx.fillStyle = '#1e272e';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Mazingira ya Pembeni (Inabadilika kulingana na LEVEL)
         ctx.fillStyle = getEnvironmentColor();
         ctx.fillRect(0, 0, 100, canvas.height);
         ctx.fillRect(canvas.width - 100, 0, 100, canvas.height);
 
-        // Kerbs (Kingo za usalama)
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(90, 0, 10, canvas.height);
         ctx.fillRect(canvas.width - 100, 0, 10, canvas.height);
 
-        // 3. Mistari ya Barabara
         ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
         for (let l = 1; l < 4; l++) {
             let lineX = (canvas.width / 4) * l;
@@ -287,14 +391,11 @@
             }
         }
 
-        // 4. Magari
         drawCar(player, true);
         enemies.forEach(enemy => drawCar(enemy, false));
 
-        // 5. CHORA LEVEL UP ANIMATION (Kama mchezaji amepanda ngazi punde tu)
         if (levelUpTimer > 0) {
             ctx.save();
-            // Inafifia taratibu kulingana na timer
             ctx.fillStyle = `rgba(255, 165, 0, ${levelUpTimer / 90})`;
             ctx.font = 'bold 90px Poppins, sans-serif';
             ctx.textAlign = 'center';
@@ -302,7 +403,7 @@
             ctx.shadowBlur = 15;
             ctx.fillText(`NGAZI YA ${level}!`, canvas.width / 2, canvas.height / 2);
             ctx.restore();
-            levelUpTimer--; // Punguza muda
+            levelUpTimer--;
         }
     }
 
@@ -316,17 +417,26 @@
 
     function endGame() {
         isGameOver = true;
+        playCrashSound(); // Inapiga sauti ya mlipuko/kugongana!
+        
+        gameStatusTitle.innerText = "MCHEZO UMEKWISHA";
+        gameStatusDesc.style.display = 'none';
+        
         finalScoreEl.innerText = score;
         finalLevelEl.innerText = level;
+        scoreBreakdown.style.display = 'block';
+        
+        startBtn.innerText = "Cheza Tena";
         gameOverScreen.style.display = 'flex';
     }
 
     function restartGame() {
+        initAudio(); // Washa audio wakati wa kubonyeza kitufe cha kuanza
         isGameOver = false;
         score = 0;
         level = 1;
         gameSpeed = 14;
-        player.speed = 20;
+        player.speed = 22;
         enemies = [];
         player.x = 525;
         levelUpTimer = 0;
@@ -336,9 +446,10 @@
         gameLoop();
     }
 
-    gameLoop();
+    // Onyesha skrini ya kwanza ya kuanza mchezo
+    gameOverScreen.style.display = 'flex';
+    draw(); // Chora mandhari ya nyuma ili isikae tupu
 </script>
 
 </body>
-    </html>
-    
+</html>
