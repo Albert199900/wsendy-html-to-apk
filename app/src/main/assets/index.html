@@ -3,141 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Offline Hub</title>
+    <title>SMS Rasmi Pro</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f4f7f6;
-            color: #333;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 400px;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-top: 10px;
-        }
-        .status-badge {
-            background-color: #ffebe9;
-            color: #ff3b30;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        h2 {
-            font-size: 22px;
-            margin-bottom: 5px;
-            color: #1a1a1a;
-        }
-        p.subtitle {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 18px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #444;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-            background-color: #f8fafc;
-        }
-        input:focus, textarea:focus {
-            border-color: #007aff;
-            outline: none;
-            background-color: #fff;
-        }
-        textarea {
-            resize: none;
-            height: 100px;
-        }
-        .btn-tuma {
-            width: 100%;
-            background-color: #007aff;
-            color: white;
-            border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 122, 255, 0.2);
-            transition: background 0.2s;
-            margin-bottom: 10px;
-        }
-        .btn-online {
-            display: block;
-            width: 100%;
-            background-color: #34c759;
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(52, 199, 89, 0.2);
-            margin-bottom: 20px;
-        }
-        .templates {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-        .templates h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        .template-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .tag {
-            background-color: #e9ecef;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f6; color: #333; padding: 15px; }
+        .container { width: 100%; max-width: 400px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0 auto; }
+        .btn-default { width: 100%; background-color: #ff9500; color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: #444; }
+        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background-color: #f8fafc; }
+        textarea { resize: none; height: 80px; }
+        .btn-tuma { width: 100%; background-color: #007aff; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        
+        /* Sehemu ya Orodha ya Majina */
+        .contacts-section { margin-top: 25px; border-top: 2px solid #eee; padding-top: 15px; }
+        .contacts-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #1a1a1a; display: flex; justify-content: space-between; }
+        .btn-vuta { background: #34c759; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        .contacts-list { max-height: 200px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        .contact-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; flex-direction: column; }
+        .contact-item:hover { background: #f0f0f0; }
+        .contact-name { font-weight: bold; font-size: 14px; }
+        .contact-number { color: #666; font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- KITUFE MPYA CHA ONLINE KILICHOITIWA LINK -->
-        <a href="URL_PLACEHOLDER" class="btn-online">Nenda Mtandaoni (Online)</a>
+        <button class="btn-default" onclick="wekaDefault()">Set as Default SMS App</button>
 
-        <div class="status-badge">Njia ya Offline (Mazingira ya Ndani)</div>
-        <h2>Ujumbe wa SMS</h2>
-        <p class="subtitle">Tuma ujumbe wa kawaida bila kutumia internet.</p>
+        <h2>Tuma Ujumbe (SMS)</h2>
+        <br>
 
         <div class="form-group">
             <label for="namba">Namba ya Simu:</label>
@@ -146,56 +41,79 @@
 
         <div class="form-group">
             <label for="ujumbe">Ujumbe wako:</label>
-            <textarea id="ujumbe" placeholder="Andika ujumbe wako hapa..." required></textarea>
+            <textarea id="ujumbe" placeholder="Andika ujumbe hapa..." required></textarea>
         </div>
 
-        <button class="btn-tuma" onclick="tumaSMS()">Fungua SMS Tuma</button>
+        <button class="btn-tuma" onclick="tumaSmsSasa()">Tuma SMS Moja kwa Moja</button>
 
-        <div class="form-group" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-            <label for="video-file">Pakia Video (Video Upload):</label>
-            <input type="file" id="video-file" accept="video/*" onchange="previewVideo()">
-        </div>
-
-        <div id="video-preview-area" style="display: none; margin-top: 15px; text-align: center;">
-            <p style="font-size: 14px; color: green; font-weight: bold; margin-bottom: 5px;">Video Imepakiwa Salama!</p>
-            <video id="kioo-cha-video" width="100%" controls style="border-radius: 8px; max-height: 250px; background: #000;"></video>
-        </div>
-
-        <div class="templates">
-            <h3>Ujumbe wa Haraka:</h3>
-            <div class="template-tags">
-                <span class="tag" onclick="wekaUjumbe('Nipigie tafadhali, niko offline.')">Nipigie</span>
-                <span class="tag" onclick="wekaUjumbe('Nimefika salama mahali nilipokuwa naenda.')">Nimefika Salama</span>
+        <div class="contacts-section">
+            <div class="contacts-title">
+                <span>Kitabu cha Majina</span>
+                <button class="btn-vuta" onclick="PakiaMajina()">Onyesha Majina</button>
+            </div>
+            <div class="contacts-list" id="orodha-ya-majina">
+                <p style="text-align: center; color: #999; padding: 15px; font-size: 13px;">Gusa "Onyesha Majina" kupakia contacts...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // JS ya Video Preview
-        function previewVideo() {
-            var fileInput = document.getElementById('video-file');
-            var previewArea = document.getElementById('video-preview-area');
-            var videoPlayer = document.getElementById('kioo-cha-video');
-            if (fileInput.files && fileInput.files[0]) {
-                videoPlayer.src = URL.createObjectURL(fileInput.files[0]);
-                previewArea.style.display = "block";
+        // Amuru Android kuomba kuwa Default App
+        function wekaDefault() {
+            if (window.Android && window.Android.wekaDefaultSmsApp) {
+                window.Android.wekaDefaultSmsApp();
+            } else {
+                alert("Msaada wa Android haujapatikana.");
             }
         }
 
-        // JS ya Ujumbe wa Haraka
-        function wekaUjumbe(maandishi) {
-            document.getElementById('ujumbe').value = maandishi;
-        }
-
-        // JS ya SMS uri
-        function tumaSMS() {
+        // Tuma ujumbe kupitia SmsManager ya Android
+        function tumaSmsSasa() {
             var namba = document.getElementById('namba').value.trim();
             var ujumbe = document.getElementById('ujumbe').value.trim();
+            
             if (namba === "" || ujumbe === "") {
-                alert("Tafadhali jaza namba ya simu na ujumbe kwanza!");
+                alert("Tafadhali jaza namba na ujumbe!");
                 return;
             }
-            window.location.href = "sms:" + namba + "?body=" + encodeURIComponent(ujumbe);
+
+            if (window.Android && window.Android.tumaSmsMojaKwaMoja) {
+                window.Android.tumaSmsMojaKwaMoja(namba, ujumbe);
+                document.getElementById('ujumbe').value = ""; // Futa ujumbe uliotumwa
+            } else {
+                alert("Mfumo wa kutuma umeshindwa.");
+            }
+        }
+
+        // Vuta majina kutoka kwenye simu na yaweke kwenye HTML list
+        function PakiaMajina() {
+            if (window.Android && window.Android.pataMajinaYaSimu) {
+                var jsonString = window.Android.pataMajinaYaSimu();
+                var majina = JSON.parse(jsonString);
+                var listContainer = document.getElementById('orodha-ya-majina');
+                
+                if (majina.length === 0) {
+                    listContainer.innerHTML = '<p style="text-align:center; padding:15px; color:red;">Hakuna ruhusa au hakuna majina!</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = ""; // Safisha ujumbe wa mwanzo
+                
+                majina.forEach(function(contact) {
+                    var div = document.createElement('div');
+                    div.className = 'contact-item';
+                    div.onclick = function() {
+                        // Ukigusa jina, namba inaingia kwenye kisanduku cha namba
+                        document.getElementById('namba').value = contact.number.replace(/\s+/g, '');
+                    };
+                    
+                    div.innerHTML = '<span class="contact-name">' + contact.name + '</span>' +
+                                    '<span class="contact-number">' + contact.number + '</span>';
+                    listContainer.appendChild(div);
+                });
+            } else {
+                alert("Imeshindwa kufikia orodha ya majina ya simu.");
+            }
         }
     </script>
 </body>
