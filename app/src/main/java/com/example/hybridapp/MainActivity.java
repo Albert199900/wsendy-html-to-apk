@@ -4,8 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,12 +33,11 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setGeolocationEnabled(true);
-        webSettings.setAllowFileAccess(true); // Ruhusu kufungua mafaili ya ndani
+        webSettings.setAllowFileAccess(true);
 
         webView.setWebViewClient(new WebViewClient());
         
         webView.setWebChromeClient(new WebChromeClient() {
-            // HII NDIO INAYORUHUSU VIDEO/FILE UPLOAD KUFANYA KAZI
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
@@ -74,14 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
         ombaRuhusaZaSimu();
 
-        if (isNetworkAvailable()) {
-            webView.loadUrl("URL_PLACEHOLDER");
-        } else {
-            webView.loadUrl("file:///android_asset/index.html");
-        }
+        // INAFUNGUA INDEX.HTML MOJA KWA MOJA KILA MARA
+        webView.loadUrl("file:///android_asset/index.html");
     }
 
-    // Pokea faili lililochaguliwa kutoka kwenye simu na lirudishe kwenye WebView
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -122,11 +115,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
-    }
-
-    private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
     }
 }
