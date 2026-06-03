@@ -4,12 +4,17 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.Telephony;
+import android.telephony.SmsManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -19,8 +24,11 @@ import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -33,49 +41,41 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Mfumo Mkuu wa Layout (Vertical)
         LinearLayout mainLayout = new LinearLayout(this);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
         mainLayout.setBackgroundColor(Color.WHITE);
 
-        // Thanh ya Juu ya Vitufe (Toolbar)
         LinearLayout toolbar = new LinearLayout(this);
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
-        toolbar.setBackgroundColor(Color.parseColor("#007AFF")); // Rangi ya Bluu ya Kisasa
+        toolbar.setBackgroundColor(Color.parseColor("#007AFF"));
         toolbar.setPadding(10, 10, 10, 10);
 
-        // 1. Kitufe cha Back (Nyuma)
         Button btnBack = new Button(this);
         btnBack.setText("◀ Nyuma");
         btnBack.setTextColor(Color.WHITE);
         btnBack.setBackgroundColor(Color.TRANSPARENT);
 
-        // 2. Kitufe cha Nenda Online
         Button btnOnline = new Button(this);
         btnOnline.setText("🌐 Online");
         btnOnline.setTextColor(Color.WHITE);
         btnOnline.setBackgroundColor(Color.TRANSPARENT);
 
-        // 3. Kitufe cha Refresh (Kusafisha)
         final Button btnRefresh = new Button(this);
         btnRefresh.setText("🔄 Refresh");
         btnRefresh.setTextColor(Color.WHITE);
         btnRefresh.setBackgroundColor(Color.TRANSPARENT);
-        btnRefresh.setVisibility(View.GONE); // Kinaanza kikiwa kimejificha (Offline)
+        btnRefresh.setVisibility(View.GONE);
 
-        // 4. Kitufe cha Share (Kushare)
         Button btnShare = new Button(this);
         btnShare.setText("🔗 Share");
         btnShare.setTextColor(Color.WHITE);
         btnShare.setBackgroundColor(Color.TRANSPARENT);
 
-        // Kuongeza vitufe kwenye Toolbar
         toolbar.addView(btnBack);
         toolbar.addView(btnOnline);
         toolbar.addView(btnRefresh);
         toolbar.addView(btnShare);
 
-        // Kutengeneza WebView
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -83,12 +83,13 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setGeolocationEnabled(true);
         webSettings.setAllowFileAccess(true);
 
-        // Kusimamia matukio ya kurasa (Navigation & Refresh Visibility)
+        // HAPA NDIAPO TUNAPOWEKA DARAJA LA HTML NA JAVA
+        webView.addJavascriptInterface(new WebAppInterface(this), "Android");
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Kama mtumiaji yuko kwenye index.html ficha Refresh, la sivyo ionyeshe
                 if (url.startsWith("file:///")) {
                     btnRefresh.setVisibility(View.GONE);
                 } else {
@@ -112,86 +113,92 @@ public class MainActivity extends AppCompatActivity {
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) { callback.invoke(origin, true, false); }
         });
 
-        // --- Kazi za Vitufe (Button Clicks) ---
-
-        // Kazi ya kitufe cha Back
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (webView.canGoBack()) {
-                    webView.goBack();
-                } else {
-                    webView.loadUrl("file:///android_asset/index.html");
-                }
-            }
+        btnBack.setOnClickListener(v -> { if (webView.canGoBack()) { webView.goBack(); } else { webView.loadUrl("file:///android_asset/index.html"); } });
+        btnOnline.setOnClickListener(v -> webView.loadUrl("URL_PLACEHOLDER"));
+        btnRefresh.setOnClickListener(v -> webView.reload());
+        btnShare.setOnClickListener(v -> {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Habari! Pakua app yetu hapa: URL_PLACEHOLDER");
+            startActivity(Intent.createChooser(shareIntent, "Share kupitia"));
         });
 
-        // Kazi ya kitufe cha Online
-        btnOnline.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                webView.loadUrl("URL_PLACEHOLDER");
-            }
-        });
-
-        // Kazi ya kitufe cha Refresh
-        btnRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                webView.reload();
-            }
-        });
-
-        // Kazi ya kitufe cha Share
-        btnShare.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Angalia App Hii");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "Habari! Pakua app yetu na utembelee tovuti yetu hapa: URL_PLACEHOLDER");
-                startActivity(Intent.createChooser(shareIntent, "Share kupitia"));
-            }
-        });
-
-        // Unganisha kila kitu kwenye Skrini
         mainLayout.addView(toolbar);
         mainLayout.addView(webView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
         setContentView(mainLayout);
 
         ombaRuhusaZaSimu();
-
-        // Fungua index.html moja kwa moja mwanzoni
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    // Mfumo wa simu wa kawaida wa kubonyeza kurudi nyuma
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
+    // DARAJA LA KAZI ZA ANDROID NDANI YA HTML
+    public class WebAppInterface {
+        Context mContext;
+        WebAppInterface(Context c) { mContext = c; }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FILECHOOSER_RESULTCODE) {
-            if (uploadMessage == null) return;
-            Uri[] results = null;
-            if (resultCode == RESULT_OK && data != null) {
-                String dataString = data.getDataString();
-                if (dataString != null) { results = new Uri[]{Uri.parse(dataString)}; }
+        @JavascriptInterface
+        public void wekaDefaultSmsApp() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (!Telephony.Sms.getDefaultSmsPackage(mContext).equals(mContext.getPackageName())) {
+                    Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+                    intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, mContext.getPackageName());
+                    mContext.startActivity(intent);
+                } else {
+                    Toast.makeText(mContext, "App hii tayari ni Default SMS App!", Toast.LENGTH_SHORT).show();
+                }
             }
-            uploadMessage.onReceiveValue(results);
-            uploadMessage = null;
+        }
+
+        @JavascriptInterface
+        public String pataMajinaYaSimu() {
+            JSONArray contactsArray = new JSONArray();
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+                Cursor cursor = mContext.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+                if (cursor != null) {
+                    try {
+                        while (cursor.moveToNext()) {
+                            int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                            int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                            if (nameIndex != -1 && numberIndex != -1) {
+                                String name = cursor.getString(nameIndex);
+                                String number = cursor.getString(numberIndex);
+                                JSONObject contact = new JSONObject();
+                                contact.put("name", name);
+                                contact.put("number", number);
+                                contactsArray.put(contact);
+                            }
+                        }
+                    } catch (Exception e) { e.printStackTrace(); }
+                    cursor.close();
+                }
+            }
+            return contactsArray.toString();
+        }
+
+        @JavascriptInterface
+        public void tumaSmsMojaKwaMoja(String namba, String ujumbe) {
+            try {
+                SmsManager smsManager;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    smsManager = mContext.getSystemService(SmsManager.class);
+                } else {
+                    smsManager = SmsManager.getDefault();
+                }
+                smsManager.sendTextMessage(namba, null, ujumbe, null, null);
+                Toast.makeText(mContext, "Ujumbe umetumwa salama!", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(mContext, "Imeshindikana kutuma SMS: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     private void ombaRuhusaZaSimu() {
-        String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_CONTACTS, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION };
+        String[] permissions = { 
+            Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, 
+            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.READ_CONTACTS, Manifest.permission.SEND_SMS, 
+            Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS 
+        };
         if (!hasPermissions(this, permissions)) { ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE); }
     }
 
