@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -83,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setGeolocationEnabled(true);
         webSettings.setAllowFileAccess(true);
 
-        // HAPA NDIAPO TUNAPOWEKA DARAJA LA HTML NA JAVA
         webView.addJavascriptInterface(new WebAppInterface(this), "Android");
 
         webView.setWebViewClient(new WebViewClient() {
@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    // DARAJA LA KAZI ZA ANDROID NDANI YA HTML
     public class WebAppInterface {
         Context mContext;
         WebAppInterface(Context c) { mContext = c; }
@@ -160,11 +159,9 @@ public class MainActivity extends AppCompatActivity {
                             int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
                             int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
                             if (nameIndex != -1 && numberIndex != -1) {
-                                String name = cursor.getString(nameIndex);
-                                String number = cursor.getString(numberIndex);
                                 JSONObject contact = new JSONObject();
-                                contact.put("name", name);
-                                contact.put("number", number);
+                                contact.put("name", cursor.getString(nameIndex));
+                                contact.put("number", cursor.getString(numberIndex));
                                 contactsArray.put(contact);
                             }
                         }
@@ -173,6 +170,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             return contactsArray.toString();
+        }
+
+        // SEHEMU MPYA: Inavuta SMS halisi kutoka kwenye Inbox au Sent za simu yako
+        @JavascriptInterface
+        public String pataSmsZilizopo(String folderType) {
+            JSONArray smsArray = new JSONArray();
+            Uri uri = Uri.parse("content://sms/" + folderType); 
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
+                Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, "date DESC");
+                if (cursor != null) {
+                    try {
+                        int limit = 40; // Kuzuia app kuelemewa na meseji elfu nne
+                        int count = 0;
+                        while (cursor.moveToNext() && count < limit) {
+                            String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+                            String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+                            long dateLong = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
+                            
+                            JSONObject sms = new JSONObject();
+                            sms.put("number", address);
+                            sms.put("body", body);
+                            sms.put("date", new Date(dateLong).toLocaleString());
+                            smsArray.put(sms);
+                            count++;
+                        }
+                    } catch (Exception e) { e.printStackTrace(); }
+                    cursor.close();
+                }
+            }
+            return smsArray.toString();
         }
 
         @JavascriptInterface
@@ -184,10 +211,11 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     smsManager = SmsManager.getDefault();
                 }
+                // Tuma ujumbe halisi
                 smsManager.sendTextMessage(namba, null, ujumbe, null, null);
-                Toast.makeText(mContext, "Ujumbe umetumwa salama!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Ujumbe umesafirishwa! (Report: Success)", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Toast.makeText(mContext, "Imeshindikana kutuma SMS: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Report: Imefeli! " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
