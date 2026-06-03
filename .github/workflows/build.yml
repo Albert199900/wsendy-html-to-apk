@@ -32,11 +32,12 @@ jobs:
     - name: Kushusha kodi kutoka Repository (Checkout)
       uses: actions/checkout@v4
 
+    # LIMESAHIHISHWA HAPA: Sasa hivi inasoma java-version: '17' kwa usahihi
     - name: Kuweka Java mazingira ya kazi (JDK 17)
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        version: '17'
+        java-version: '17'
 
     - name: Weka na Kusanidi Injini ya Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -49,21 +50,15 @@ jobs:
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
         sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
-    # SULUHISHO KUU: Futa kodi zote za SMS kwenye Manifest, Java, na HTML kwa mpigo!
     - name: Kudhibiti Ruhusa na Kodi za SMS (Anti-Block Filter)
       if: ${{ github.event.inputs.andika_sms == 'no' }}
       run: |
-        # 1. Futa kwenye Manifest
         sed -i '/SMS/d' app/src/main/AndroidManifest.xml
         sed -i '/CONTACTS/d' app/src/main/AndroidManifest.xml
         sed -i '/SmsReceiver/d' app/src/main/AndroidManifest.xml
         sed -i '/MmsReceiver/d' app/src/main/AndroidManifest.xml
         sed -i '/HeadlessSmsSendService/d' app/src/main/AndroidManifest.xml
-        
-        # 2. Futa kodi zote zilizopo kati ya alama za // SMS_START na // SMS_END kwenye Java
         sed -i '/\/\/ SMS_START/,/\/\/ SMS_END/d' app/src/main/java/com/example/hybridapp/MainActivity.java
-        
-        # 3. Futa kodi zote zilizopo kati ya na kwenye HTML
         sed -i '//,//d' app/src/main/assets/index.html
 
     - name: Weka Mipangilio ya AndroidX
