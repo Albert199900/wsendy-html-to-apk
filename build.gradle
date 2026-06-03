@@ -4,7 +4,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
+        // Imebadilishwa kutoka 8.0.2 kwenda 8.4.0 ili iendane na Gradle 8.7
+        classpath 'com.android.tools.build:gradle:8.4.0'
     }
 }
 allprojects {
