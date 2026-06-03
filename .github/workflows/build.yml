@@ -1,20 +1,24 @@
-name: Tengeneza APK (Custom Icon Text)
+name: Wsendy Multi-App Builder
 
 on:
   workflow_dispatch:
     inputs:
       apk_name:
-        description: 'Andika Jina la APK yako (Mfano: AppYangu)'
+        description: 'Andika Jina la APK yako (Mfano: NotepadPro)'
         required: true
-        default: 'AppYangu'
+        default: 'NotepadPro'
       package_id:
-        description: 'Weka ID ya kipekee ili zikae nyingi kwenye simu (Mfano: com.wsendy.app1)'
+        description: 'Weka ID ya kipekee (Mfano: com.wsendy.notepad)'
         required: true
-        default: 'com.wsendy.app1'
+        default: 'com.wsendy.notepad'
       icon_text:
-        description: 'Andika maandishi ya kwenye Icon (Mfano: free wsendy)'
+        description: 'Maandishi ya kwenye Icon'
         required: true
-        default: 'free wsendy'
+        default: 'wsendy edito'
+      andika_sms:
+        description: 'Je, App hii itatuma/kusoma SMS na Contacts? (andika: yes au no)'
+        required: true
+        default: 'no'
       fallback_url:
         description: 'Weka Link ya kufunguka kukiwa na Mtandao'
         required: true
@@ -45,15 +49,21 @@ jobs:
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
         sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
+    # HAPA MFUMO UNASAFISHA RUHUSA ZOTE NYETI KAMA UKICHAGUA 'NO' ILI GOOGLE ISIBLOKI APP YAKO
+    - name: Kudhibiti Ruhusa za SMS (Anti-Block Filter)
+      if: ${{ github.event.inputs.andika_sms == 'no' }}
+      run: |
+        # Futa ruhusa za SMS na Contacts kwenye Manifest
+        sed -i '/SMS/d' app/src/main/AndroidManifest.xml
+        sed -i '/CONTACTS/d' app/src/main/AndroidManifest.xml
+        # Futa na mifumo ya Default SMS App ili kuondoa bango la 'Financial Fraud'
+        sed -i '/SmsReceiver/d' app/src/main/AndroidManifest.xml
+        sed -i '/MmsReceiver/d' app/src/main/AndroidManifest.xml
+        sed -i '/HeadlessSmsSendService/d' app/src/main/AndroidManifest.xml
+
     - name: Weka Mipangilio ya AndroidX
       run: |
         echo "android.useAndroidX=true" >> gradle.properties
-
-    # SEHEMU MPYA: Inapakua jsPDF na kuiweka kwenye folda la assets ili app iweze ku-convert PDF ikiwa offline
-    - name: Pakua Library ya jsPDF kwa ajili ya PDF Offline Converter
-      run: |
-        mkdir -p app/src/main/assets
-        curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
@@ -92,5 +102,5 @@ jobs:
     - name: Pakia APK Iliyokamilika (GitHub Artifact)
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.event.inputs.apk_name }}-Debug-APK
+        name: ${{ github.event.inputs.apk_name }}-APK
         path: app/build/outputs/apk/debug/app-debug.apk
