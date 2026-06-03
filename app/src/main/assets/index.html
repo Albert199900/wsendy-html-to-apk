@@ -37,12 +37,10 @@
         .card-actions { position: absolute; right: 8px; top: 8px; display: flex; gap: 4px; }
         .action-btn { border: none; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; color: white; }
 
-        /* REKEBISHO LA KAMERA: Tumeipa upana na urefu thabiti */
         #camera-view { width: 100%; height: 280px; background: #000; border-radius: 6px; display: none; object-fit: cover; }
         #scan-preview { width: 100%; max-height: 250px; object-fit: contain; border: 2px dashed #ccc; border-radius: 6px; display: none; margin-top: 10px; }
         .btn-scan { background: #007aff; color: white; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer; }
 
-        /* POPUP YA JICHO (PREVIEW MODAL) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; padding: 15px; overflow-y: auto; }
         .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 450px; margin: 30px auto; position: relative; }
         .close-modal { position: absolute; right: 12px; top: 12px; background: #ff3b30; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
@@ -54,10 +52,10 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn active" id="main-sms-tab" onclick="switchTab('sms')">💬 SMS Pro</button>
-            <button class="tab-btn" id="main-editor-tab" onclick="switchTab('editor')">📝 Editor</button>
-            <button class="tab-btn" onclick="switchTab('scanner')">📷 Scanner</button>
-            <button class="tab-btn" onclick="switchTab('archive')">📁 Hati</button>
+            <button class="tab-btn active" id="tab-sms" onclick="switchTab('sms')">💬 SMS Pro</button>
+            <button class="tab-btn" id="tab-editor" onclick="switchTab('editor')">📝 Editor</button>
+            <button class="tab-btn" id="tab-scanner" onclick="switchTab('scanner')">📷 Scanner</button>
+            <button class="tab-btn" id="tab-archive" onclick="switchTab('archive')">📁 Hati</button>
         </div>
 
         <div id="section-sms" class="app-section active">
@@ -95,7 +93,7 @@
                 <button class="btn-scan" id="start-cam-btn" onclick="openCamera()">Washa Kamera</button>
                 <button class="btn-scan" id="capture-btn" onclick="captureDocument()" style="display: none; background: #34c759;">Scan Hati 📷</button>
             </div>
-            <img id="scan-preview" alt="Preview"><button class="btn-block btn-success" id="use-scan-btn" onclick="attachScanToEditor()" style="display: none;">Ingiza Kwenye Editor</button>
+            <img id="scan-preview" alt="Preview"><button class="btn-block btn-success" id="use-scan-btn" onclick="attachScanToEditor()">Ingiza Kwenye Editor</button>
         </div>
 
         <div id="section-archive" class="app-section"><div id="notes-list"></div></div>
@@ -115,24 +113,28 @@
         let currentStream = null; let scannedImageBase64 = ""; let currentSmsFolder = "tuma";
 
         window.onload = function() {
-            var smsTabExists = document.getElementById('main-sms-tab');
-            if (!smsTabExists) { document.getElementById('main-editor-tab').click(); }
+            var smsTabExists = document.getElementById('tab-sms');
+            if (!smsTabExists) { switchTab('editor'); }
         };
 
+        // ILIREKEBISHWA: Inabadili tab kwa kutumia ID maalum, haitemei tena event.target ya kubahatisha
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
-            if(event) { event.target.classList.add('active'); }
+            
+            let targetBtn = document.getElementById('tab-' + tabName);
+            if(targetBtn) { targetBtn.classList.add('active'); }
+            
             document.getElementById('section-' + tabName).classList.add('active');
             stopCamera();
             if (tabName === 'archive') { loadNotesList(); }
-            if (tabName === 'sms' && currentSmsFolder !== 'tuma') { pakiaSmsKwenyeSkrini(currentSmsFolder); }
-        }
+            // if (tabName === 'sms' && currentSmsFolder !== 'tuma') { pakiaSmsKwenyeSkrini(currentSmsFolder); }
+            // }
 
         // function switchSmsTab(folder) {
             currentSmsFolder = folder;
             document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if(event) event.target.classList.add('active');
             document.getElementById('block-manager-area').style.display = (folder === 'blocked') ? 'block' : 'none';
             if (folder === 'tuma') {
                 document.getElementById('sms-tuma').style.display = 'block';
@@ -170,18 +172,15 @@
             let blocked = JSON.parse(localStorage.getItem('wsendy_blocked')) || [];
             if(!blocked.includes(number)) { blocked.push(number); localStorage.setItem('wsendy_blocked', JSON.stringify(blocked)); numInput.value = ""; pakiaSmsKwenyeSkrini('blocked'); }
         }
-        // // --- SCANNER MECHANISM RESOLVED ---
-        async function openCamera() {
+        // async function openCamera() {
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
                     audio: false 
                 });
                 const video = document.getElementById('camera-view');
-                video.srcObject = currentStream; 
-                video.style.display = "block";
-                document.getElementById('start-cam-btn').style.display = "none"; 
-                document.getElementById('capture-btn').style.display = "block";
+                video.srcObject = currentStream; video.style.display = "block";
+                document.getElementById('start-cam-btn').style.display = "none"; document.getElementById('capture-btn').style.display = "block";
             } catch (err) { alert("Hitilafu ya Kamera: " + err.message); }
         }
         function stopCamera() { if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } document.getElementById('camera-view').style.display = "none"; document.getElementById('start-cam-btn').style.display = "block"; document.getElementById('capture-btn').style.display = "none"; }
@@ -192,10 +191,9 @@
             for (let i = 0; i < data.length; i += 4) { let b = 0.34*data[i] + 0.5*data[i+1] + 0.16*data[i+2]; let f = (b > 125) ? 255 : 0; data[i]=f; data[i+1]=f; data[i+2]=f; } ctx.putImageData(imgData, 0, 0); scannedImageBase64 = canvas.toDataURL('image/jpeg');
             const preview = document.getElementById('scan-preview'); preview.src = scannedImageBase64; preview.style.display = "block"; document.getElementById('use-scan-btn').style.display = "block"; stopCamera();
         }
-        function attachScanToEditor() { document.getElementById('attached-scanned-img').src = scannedImageBase64; document.getElementById('editor-image-preview').style.display = "block"; switchTab('editor'); document.getElementById('main-editor-tab').classList.add('active'); if(document.getElementById('main-sms-tab')) document.getElementById('main-sms-tab').classList.remove('active'); }
+        function attachScanToEditor() { document.getElementById('attached-scanned-img').src = scannedImageBase64; document.getElementById('editor-image-preview').style.display = "block"; switchTab('editor'); }
         function removeAttachedImage() { scannedImageBase64 = ""; document.getElementById('editor-image-preview').style.display = "none"; }
         
-        // --- PDF GENERATOR ---
         function generatePDF(t, b, img, d) { try { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(0, 102, 204); doc.text(t, 14, 20); doc.line(14, 25, 196, 25); doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.text(doc.splitTextToSize(b, 180), 14, 35); if (img) { doc.addPage(); doc.text("HATI ILIYOSKANISHWA:", 14, 15); doc.addImage(img, 'JPEG', 14, 22, 182, 135); } doc.save(t.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".pdf"); } catch (e) {} }
         function convertActiveNoteToPDF() { var t = document.getElementById('note-title').value; var b = document.getElementById('note-body').value; if(!t||!b) return; generatePDF(t,b,scannedImageBase64,new Date().toLocaleDateString()); }
         
@@ -205,21 +203,16 @@
             document.getElementById('note-title').value = ""; document.getElementById('note-body').value = ""; removeAttachedImage(); alert("Imehifadhiwa!"); switchTab('archive');
         }
 
-        // --- ARCHIVE WITH "JICHO" (PREVIEW) FUNCTION ---
+        // ILIREKEBISHWA: Vitufe vya PDF na Jicho sasa hivi havifungwi kwa njia ya maandishi (String injection) inayovunja LocalStorage. Vinatumia ID salama ya namba pekee!
         function loadNotesList() {
             const container = document.getElementById('notes-list'); let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || []; if(notes.length===0) { container.innerHTML='<p style="text-align:center;color:#999;font-size:12px;">Hakuna hati.</p>'; return; }
             container.innerHTML = ""; 
             notes.forEach(n => { 
                 let card = document.createElement('div'); card.className = 'note-card'; 
-                
-                // Salama ya ku-escape single quotes kwenye kodi za PDF button
-                let safeTitle = n.title.replace(/'/g, "\\'");
-                let safeBody = n.body.replace(/'/g, "\\'").replace(/\n/g, " ");
-
                 card.innerHTML = `
                     <div class="card-actions">
                         <button class="action-btn" style="background:#00c2ff;" onclick="event.stopPropagation(); funguaJicho(${n.id})">👁️ Jicho</button>
-                        <button class="action-btn" style="background:#ff9500;" onclick="event.stopPropagation(); generatePDF('${safeTitle}', '${safeBody}', '${n.image || ""}', '${n.date}')">PDF 📄</button>
+                        <button class="action-btn" style="background:#ff9500;" onclick="event.stopPropagation(); bofyaPDF(${n.id})">PDF 📄</button>
                         <button class="action-btn" style="background:#ff3b30;" onclick="event.stopPropagation(); deleteNote(${n.id})">Futa</button>
                     </div>
                     <h4 style="font-size:14px; padding-right:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${n.title}</h4>
@@ -230,23 +223,20 @@
             });
         }
 
-        // KAZI ZA POPUP YA JICHO
-        function funguaJicho(id) {
+        function bofyaPDF(id) {
             let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
             let note = notes.find(n => n.id === id);
-            if(!note) return;
+            if (note) { generatePDF(note.title, note.body, note.image || "", note.date); }
+        }
 
+        function funguaJicho(id) {
+            let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
+            let note = notes.find(n => n.id === id); if(!note) return;
             document.getElementById('jicho-title').innerText = note.title;
             document.getElementById('jicho-date').innerText = "Tarehe: " + note.date;
             document.getElementById('jicho-body').innerText = note.body;
-            
             let imgContainer = document.getElementById('jicho-image-container');
-            if(note.image) {
-                imgContainer.innerHTML = `<label style="font-size:11px; font-weight:bold; color:#333; display:block; margin-top:10px;">Hati Iliyoskaniwa (Document):</label><img src="${note.image}" style="width:100%; border-radius:6px; border:1px solid #ddd; margin-top:5px;">`;
-            } else {
-                imgContainer.innerHTML = "";
-            }
-            
+            if(note.image) { imgContainer.innerHTML = `<label style="font-size:11px; font-weight:bold; color:#333; display:block; margin-top:10px;">Hati Iliyoskaniwa:</label><img src="${note.image}" style="width:100%; border-radius:6px; border:1px solid #ddd; margin-top:5px;">`; } else { imgContainer.innerHTML = ""; }
             document.getElementById('jicho-modal').style.display = "block";
         }
         function fungaJicho() { document.getElementById('jicho-modal').style.display = "none"; }
