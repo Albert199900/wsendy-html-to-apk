@@ -43,13 +43,17 @@ jobs:
       run: |
         sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
-        
-        # IMEBADILISHWA HAPA: Inarudisha mabadiliko ya Link ndani ya MainActivity.java
         sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
     - name: Weka Mipangilio ya AndroidX
       run: |
         echo "android.useAndroidX=true" >> gradle.properties
+
+    # SEHEMU MPYA: Inapakua jsPDF na kuiweka kwenye folda la assets ili app iweze ku-convert PDF ikiwa offline
+    - name: Pakua Library ya jsPDF kwa ajili ya PDF Offline Converter
+      run: |
+        mkdir -p app/src/main/assets
+        curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
