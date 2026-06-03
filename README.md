@@ -1,0 +1,1 @@
+# wsendy-html-to-apk
