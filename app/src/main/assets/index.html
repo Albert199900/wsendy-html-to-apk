@@ -3,287 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wsendy Edito Notpad & PDF</title>
+    <title>Wsendy Edito & SMS Hub</title>
     <script src="jspdf.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #f4f6f9; color: #333; padding-bottom: 30px; }
         
-        .app-header { background: linear-gradient(135deg, #FFCC00 0%, #0066CC 50%, #CC3333 100%); color: white; padding: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .app-header h1 { font-size: 20px; letter-spacing: 1px; text-shadow: 1px 1px 3px #000; }
-        .app-header p { font-size: 11px; opacity: 0.9; font-weight: bold; }
+        .app-header { background: linear-gradient(135deg, #FFCC00 0%, #0066CC 50%, #CC3333 100%); color: white; padding: 12px; text-align: center; }
+        .app-header h1 { font-size: 18px; text-shadow: 1px 1px 2px #000; }
 
-        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 10px; }
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 12px; background: #e2e8f0; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        /* Menu kuu ya juu */
+        .tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 10px; background: #e2e8f0; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; min-width: 80px; }
         .tab-btn.active { background: #0066CC; color: white; }
 
-        .app-section { display: none; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .app-section { display: none; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .app-section.active { display: block; }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #555; }
-        input[type="text"], textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; background: #f8fafc; }
-        textarea { height: 150px; resize: none; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
+        input[type="text"], input[type="tel"],延 textarea { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px; background: #f8fafc; }
+        textarea { height: 100px; resize: none; }
         
-        .btn-block { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; color: white; margin-top: 5px; }
+        .btn-block { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; margin-top: 5px; }
         .btn-success { background-color: #34c759; }
         .btn-pdf { background-color: #ff9500; }
         .btn-danger { background-color: #ff3b30; }
+        .btn-dark { background-color: #333; }
 
-        #camera-view { width: 100%; background: #000; border-radius: 8px; display: none; }
-        .scanner-controls { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-scan { background: #007aff; color: white; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; }
-        #scan-preview { width: 100%; border: 2px dashed #ccc; border-radius: 8px; margin-top: 10px; display: none; }
+        /* Muundo wa Meseji / List Styles */
+        .sub-menu { display: flex; gap: 5px; background: #f1f5f9; padding: 5px; border-radius: 6px; margin-bottom: 12px; }
+        .sub-btn { flex: 1; padding: 6px; border: none; background: transparent; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #0066CC; }
 
-        .note-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; position: relative; }
-        .note-card h3 { font-size: 15px; margin-bottom: 4px; color: #1a1a1a; padding-right: 110px; }
-        .note-card p { font-size: 13px; color: #666; }
-        .note-card img { max-height: 60px; margin-top: 5px; border-radius: 4px; }
-        
-        .card-actions { position: absolute; right: 10px; top: 10px; display: flex; gap: 5px; }
-        .action-btn { border: none; padding: 5px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .action-del { background: #ffebe9; color: #ff3b30; }
-        .action-pdf { background: #e3f2fd; color: #0066CC; }
+        .msg-box { border-bottom: 1px solid #eee; padding: 10px 5px; position: relative; }
+        .msg-number { font-weight: bold; font-size: 13px; color: #1a1a1a; }
+        .msg-date { font-size: 10px; color: #999; float: right; }
+        .msg-body { font-size: 12px; color: #555; margin-top: 3px; }
+
+        .note-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-bottom: 8px; position: relative; }
+        #camera-view { width: 100%; background: #000; border-radius: 6px; display: none; }
+        #scan-preview { width: 100%; border: 2px dashed #ccc; border-radius: 6px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="app-header">
-        <h1>WSENDY EDITO NOTPAD</h1>
-        <p>OFFLINE PDF CONVERTER & SCANNER</p>
+        <h1>WSENDY EDITO & SMS HUB</h1>
     </div>
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('editor')">📝 Editor</button>
+            <button class="tab-btn active" onclick="switchTab('sms')">💬 SMS Pro</button>
+            <button class="tab-btn" onclick="switchTab('editor')">📝 Editor</button>
             <button class="tab-btn" onclick="switchTab('scanner')">📷 Scanner</button>
-            <button class="tab-btn" onclick="switchTab('archive')">📁 Machapisho</button>
+            <button class="tab-btn" onclick="switchTab('archive')">📁 Hati</button>
         </div>
 
-        <div id="section-editor" class="app-section active">
-            <div class="form-group">
-                <label for="note-title">Kichwa cha Chapisho / Hati:</label>
-                <input type="text" id="note-title" placeholder="Andika kichwa cha habari hapa...">
-            </div>
+        <div id="section-sms" class="app-section active">
+            <button class="btn-block btn-pdf" style="margin-bottom: 10px; font-size: 12px; padding: 8px;" onclick="window.Android.wekaDefaultSmsApp()">Set as Default SMS App 🔑</button>
             
-            <div class="form-group">
-                <label for="note-body">Maandishi / Maudhui:</label>
-                <textarea id="note-body" placeholder="Anza kuandaa chapisho lako hapa..."></textarea>
+            <div class="sub-menu">
+                <button class="sub-btn active" onclick="switchSmsTab('tuma')">Tuma</button>
+                <button class="sub-btn" onclick="switchSmsTab('inbox')">Zilizoingia</button>
+                <button class="sub-btn" onclick="switchSmsTab('sent')">Zilizotumwa</button>
+                <button class="sub-btn" onclick="switchSmsTab('blocked')">Zilizoblokiwa</button>
             </div>
 
-            <div id="editor-image-preview" style="margin-bottom: 15px; display: none;">
-                <label>Document Iliyofungwa (Scanned):</label>
-                <img id="attached-scanned-img" src="" style="width: 100%; border-radius: 8px;">
-                <button class="btn-block btn-danger" style="padding: 6px; font-size: 12px;" onclick="removeAttachedImage()">Ondoa Picha</button>
+            <div id="sms-tuma" class="sms-sub-panel">
+                <div class="form-group">
+                    <label>Namba ya Mlengwa:</label>
+                    <input type="tel" id="sms-namba" placeholder="Mfano: 0712345678">
+                </div>
+                <div class="form-group">
+                    <label>Ujumbe (Mwishoni utapata Ripoti):</label>
+                    <textarea id="sms-ujumbe" placeholder="Andika ujumbe wako hapa..."></textarea>
+                </div>
+                <button class="btn-block btn-success" onclick="tumaSmsSasa()">Tuma SMS Moja kwa Moja 🚀</button>
             </div>
 
-            <button class="btn-block btn-success" onclick="saveNote()">Hifadhi Kwenye App (Save)</button>
-            <button class="btn-block btn-pdf" onclick="convertActiveNoteToPDF()">Convert & Pakua PDF 📄</button>
+            <div id="sms-list-container" class="sms-sub-panel" style="display: none;">
+                <div id="block-manager-area" style="display: none; background: #fff5f5; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                    <input type="tel" id="block-new-number" placeholder="Weka namba ya Kubloki..." style="padding: 6px; font-size: 12px; width: 70%;">
+                    <button class="btn-success" style="padding: 6px 10px; border:none; border-radius:4px; font-size:12px;" onclick="blockNumber()">Bloki</button>
+                </div>
+                <div id="sms-render-list" style="max-height: 350px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <div id="section-editor" class="app-section">
+            <div class="form-group"><label>Kichwa cha Hati:</label><input type="text" id="note-title" placeholder="Kichwa..."></div>
+            <div class="form-group"><label>Maudhui:</label><textarea id="note-body" placeholder="Andika hapa..."></textarea></div>
+            <div id="editor-image-preview" style="margin-bottom: 10px; display: none;"><img id="attached-scanned-img" src="" style="width: 100%; border-radius: 6px;"><button class="btn-block btn-danger" style="padding:4px; font-size:11px;" onclick="removeAttachedImage()">Ondoa Picha</button></div>
+            <button class="btn-block btn-success" onclick="saveNote()">Hifadhi (Save)</button>
+            <button class="btn-block btn-pdf" onclick="convertActiveNoteToPDF()">Convert to PDF 📄</button>
         </div>
 
         <div id="section-scanner" class="app-section">
-            <label>Kamera ya Scan Nyaraka:</label>
-            <video id="camera-view" autoplay playsinline></video>
-            <canvas id="processing-canvas" style="display: none;"></canvas>
-            
+            <video id="camera-view" autoplay playsinline></video><canvas id="processing-canvas" style="display: none;"></canvas>
             <div class="scanner-controls">
                 <button class="btn-scan" id="start-cam-btn" onclick="openCamera()">Washa Kamera</button>
-                <button class="btn-scan" id="capture-btn" onclick="captureDocument()" style="display: none; background: #34c759;">Piga Picha (Scan)</button>
+                <button class="btn-scan" id="capture-btn" onclick="captureDocument()" style="display: none; background: #34c759;">Scan Hati 📷</button>
             </div>
-
-            <img id="scan-preview" alt="Scan Preview">
-            <button class="btn-block btn-success" id="use-scan-btn" onclick="attachScanToEditor()" style="display: none; margin-top: 10px;">Ingiza Kwenye Editor</button>
+            <img id="scan-preview" alt="Preview"><button class="btn-block btn-success" id="use-scan-btn" onclick="attachScanToEditor()" style="display: none;">Ingiza Kwenye Editor</button>
         </div>
 
-        <div id="section-archive" class="app-section">
-            <label style="font-size: 15px; margin-bottom: 10px;">Machapisho Yaliyohifadhiwa:</label>
-            <div id="notes-list"></div>
-        </div>
+        <div id="section-archive" class="app-section"><div id="notes-list"></div></div>
     </div>
 
     <script>
         let currentStream = null;
         let scannedImageBase64 = "";
+        let currentSmsFolder = "tuma";
 
+        // Mfumo wa kubadili Tabs kuu
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById('section-' + tabName).classList.add('active');
-            if (tabName !== 'scanner') { stopCamera(); }
+            stopCamera();
             if (tabName === 'archive') { loadNotesList(); }
+            if (tabName === 'sms' && currentSmsFolder !== 'tuma') { pakiaSmsKwenyeSkrini(currentSmsFolder); }
         }
 
-        // --- CAMERA & SCANNER FUNCTIONS ---
+        // Sub-tabs za SMS (Inbox, Sent, Blocked)
+        function switchSmsTab(folder) {
+            currentSmsFolder = folder;
+            document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('block-manager-area').style.display = (folder === 'blocked') ? 'block' : 'none';
+
+            if (folder === 'tuma') {
+                document.getElementById('sms-tuma').style.display = 'block';
+                document.getElementById('sms-list-container').style.display = 'none';
+            } else {
+                document.getElementById('sms-tuma').style.display = 'none';
+                document.getElementById('sms-list-container').style.display = 'block';
+                pakiaSmsKwenyeSkrini(folder);
+            }
+        }
+
+        // --- USIMAMIZI WA SMS (REAL TIME AND OFFLINE FILTER) ---
+        function tumaSmsSasa() {
+            var namba = document.getElementById('sms-namba').value.trim();
+            var ujumbe = document.getElementById('sms-ujumbe').value.trim();
+            if(!namba || !ujumbe) { alert("Jaza namba na ujumbe!"); return; }
+            
+            if(window.Android && window.Android.tumaSmsMojaKwaMoja) {
+                window.Android.tumaSmsMojaKwaMoja(namba, ujumbe);
+                document.getElementById('sms-ujumbe').value = "";
+            } else { alert("Mfumo wa Android haujapatikana."); }
+        }
+
+        function pakiaSmsKwenyeSkrini(folder) {
+            const listArea = document.getElementById('sms-render-list');
+            listArea.innerHTML = '<p style="text-align:center; padding:10px; color:#999;">Inapakia kutoka kwenye simu...</p>';
+
+            if (!window.Android || !window.Android.pataSmsZilizopo) {
+                listArea.innerHTML = '<p style="text-align:center; color:red; padding:10px;">Zana za SMS hazijapatikana.</p>';
+                return;
+            }
+
+            // Vuta orodha ya namba zilizoblokiwa kwenye LocalStorage
+            let blockedNumbers = JSON.parse(localStorage.getItem('wsendy_blocked')) || [];
+            
+            // Kama folder ni 'blocked', tunavuta kwanza 'inbox' halisi ya simu ili tuichuje hapa ndani offline
+            let fetchFolder = (folder === 'blocked') ? 'inbox' : folder;
+            let rawData = window.Android.pataSmsZilizopo(fetchFolder);
+            let smsList = JSON.parse(rawData);
+
+            if (folder === 'blocked') {
+                // Sefa na uonyeshe meseji tu ambazo namba zao zimo kwenye block list yetu
+                smsList = smsList.filter(sms => blockedNumbers.some(bNum => sms.number.includes(bNum) || bNum.includes(sms.number)));
+            } else if (folder === 'inbox') {
+                // Ondoa meseji zote za watu walioblokiwa kwenye Inbox ya kawaida
+                smsList = smsList.filter(sms => !blockedNumbers.some(bNum => sms.number.includes(bNum) || bNum.includes(sms.number)));
+            }
+
+            if(smsList.length === 0) {
+                listArea.innerHTML = `<p style="text-align:center; padding:20px; color:#999; font-size:12px;">Hakuna ujumbe hapa (${folder}).</p>`;
+                return;
+            }
+
+            listArea.innerHTML = "";
+            smsList.forEach(sms => {
+                let div = document.createElement('div');
+                div.className = 'msg-box';
+                div.innerHTML = `
+                    <span class="msg-date">${sms.date}</span>
+                    <div class="msg-number">${sms.number}</div>
+                    <div class="msg-body">${sms.body}</div>
+                `;
+                // Ukigusa ujumbe unajaza namba kiotomatiki ukitaka kumjibu
+                div.onclick = () => {
+                    document.getElementById('sms-namba').value = sms.number;
+                    switchSmsTab('tuma');
+                };
+                listArea.appendChild(div);
+            });
+        }
+
+        // Kazi za Kubloki Namba
+        function blockNumber() {
+            let numInput = document.getElementById('block-new-number');
+            let number = numInput.value.trim();
+            if(!number) return;
+            let blocked = JSON.parse(localStorage.getItem('wsendy_blocked')) || [];
+            if(!blocked.includes(number)) {
+                blocked.push(number);
+                localStorage.setItem('wsendy_blocked', JSON.stringify(blocked));
+                alert("Namba " + number + " imewekwa kwenye Block List!");
+                numInput.value = "";
+                pakiaSmsKwenyeSkrini('blocked');
+            }
+        }
+
+        // --- SCANNER & NOTEPAD FUNCTIONS (ZILIZOPITA) ---
         async function openCamera() {
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
                 const video = document.getElementById('camera-view');
-                video.srcObject = currentStream;
-                video.style.display = "block";
-                document.getElementById('start-cam-btn').style.display = "none";
-                document.getElementById('capture-btn').style.display = "block";
-            } catch (err) { alert("Tafadhali ruhusu kamera kufanya kazi."); }
+                video.srcObject = currentStream; video.style.display = "block";
+                document.getElementById('start-cam-btn').style.display = "none"; document.getElementById('capture-btn').style.display = "block";
+            } catch (err) { alert("Ruhusu kamera kwanza."); }
         }
-
-        function stopCamera() {
-            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
-            document.getElementById('camera-view').style.display = "none";
-            document.getElementById('start-cam-btn').style.display = "block";
-            document.getElementById('capture-btn').style.display = "none";
-        }
-
+        function stopCamera() { if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } document.getElementById('camera-view').style.display = "none"; document.getElementById('start-cam-btn').style.display = "block"; document.getElementById('capture-btn').style.display = "none"; }
         function captureDocument() {
-            const video = document.getElementById('camera-view');
-            const canvas = document.getElementById('processing-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imgData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                let brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
-                let threshold = 125;
-                let finalColor = (brightness > threshold) ? 255 : 0;
-                data[i] = finalColor; data[i + 1] = finalColor; data[i + 2] = finalColor;
-            }
-            ctx.putImageData(imgData, 0, 0);
-
-            scannedImageBase64 = canvas.toDataURL('image/jpeg');
-            const preview = document.getElementById('scan-preview');
-            preview.src = scannedImageBase64;
-            preview.style.display = "block";
-            document.getElementById('use-scan-btn').style.display = "block";
-            stopCamera();
+            const video = document.getElementById('camera-view'); const canvas = document.getElementById('processing-canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight; ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height); const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) { let b = 0.34*data[i] + 0.5*data[i+1] + 0.16*data[i+2]; let f = (b > 125) ? 255 : 0; data[i]=f; data[i+1]=f; data[i+2]=f; }
+            ctx.putImageData(imgData, 0, 0); scannedImageBase64 = canvas.toDataURL('image/jpeg');
+            const preview = document.getElementById('scan-preview'); preview.src = scannedImageBase64; preview.style.display = "block";
+            document.getElementById('use-scan-btn').style.display = "block"; stopCamera();
         }
-
-        function attachScanToEditor() {
-            document.getElementById('attached-scanned-img').src = scannedImageBase64;
-            document.getElementById('editor-image-preview').style.display = "block";
-            document.querySelectorAll('.tab-btn')[0].click();
-        }
-
-        function removeAttachedImage() {
-            scannedImageBase64 = "";
-            document.getElementById('editor-image-preview').style.display = "none";
-        }
-
-        // --- KAZI YA OFFLINE PDF CONVERTER ---
-        function generatePDF(title, body, imageBase64, dateStr) {
+        function attachScanToEditor() { document.getElementById('attached-scanned-img').src = scannedImageBase64; document.getElementById('editor-image-preview').style.display = "block"; document.querySelectorAll('.tab-btn')[1].click(); }
+        function removeAttachedImage() { scannedImageBase64 = ""; document.getElementById('editor-image-preview').style.display = "none"; }
+        
+        function generatePDF(title, body, img, date) {
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                // 1. Kichwa cha PDF
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(22);
-                doc.setTextColor(0, 102, 204); // Rangi ya Bluu
-                doc.text(title, 14, 25);
-
-                // 2. Tarehe
-                doc.setFont("helvetica", "italic");
-                doc.setFontSize(10);
-                doc.setTextColor(120, 120, 120);
-                doc.text("Imeandaliwa kupitia Wsendy Edito: " + dateStr, 14, 32);
-
-                // Mstari wa urembo chini ya kichwa
-                doc.setDrawColor(200, 200, 200);
-                doc.line(14, 36, 196, 36);
-
-                // 3. Maandishi ya Chapisho
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(13);
-                doc.setTextColor(40, 40, 40);
-                
-                // Kata maandishi yaendane na upana wa ukurasa wa PDF
-                const splitBody = doc.splitTextToSize(body, 180);
-                doc.text(splitBody, 14, 45);
-
-                // 4. Kama kuna picha ya Document, iweke kwenye ukurasa unaofuata
-                if (imageBase64) {
-                    doc.addPage();
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(14);
-                    doc.setTextColor(0, 0, 0);
-                    doc.text("NYARAKA ILIYOSKANISHWA (ATTACHED DOCUMENT):", 14, 15);
-                    
-                    // Ingiza picha ya Scan
-                    doc.addImage(imageBase64, 'JPEG', 14, 25, 182, 135);
-                }
-
-                // Hifadhi faili kwenye simu
+                const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(0, 102, 204); doc.text(title, 14, 20);
+                doc.setFont("helvetica", "italic"); doc.setFontSize(10); doc.text("Tarehe: " + date, 14, 27); doc.line(14, 30, 196, 30);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.text(doc.splitTextToSize(body, 180), 14, 38);
+                if (img) { doc.addPage(); doc.text("HATI ILIYOSKANISHWA:", 14, 15); doc.addImage(img, 'JPEG', 14, 22, 182, 135); }
                 doc.save(title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".pdf");
-            } catch (error) {
-                alert("Hitilafu ya PDF: " + error.message);
-            }
+            } catch (e) { alert("Kosa la PDF: " + e.message); }
         }
-
-        function convertActiveNoteToPDF() {
-            const title = document.getElementById('note-title').value.trim();
-            const body = document.getElementById('note-body').value.trim();
-            if (!title || !body) { alert("Andika kitu kwenye editor kwanza!"); return; }
-            generatePDF(title, body, scannedImageBase64, new Date().toLocaleDateString());
-        }
-
-        // --- STORAGE MANAGEMENT ---
+        function convertActiveNoteToPDF() { var t = document.getElementById('note-title').value; var b = document.getElementById('note-body').value; if(!t||!b){alert("Jaza kwanza!"); return;} generatePDF(t,b,scannedImageBase64,new Date().toLocaleDateString()); }
         function saveNote() {
-            const title = document.getElementById('note-title').value.trim();
-            const body = document.getElementById('note-body').value.trim();
-            if (!title || !body) { alert("Jaza kichwa na maandishi!"); return; }
-
+            var t = document.getElementById('note-title').value; var b = document.getElementById('note-body').value; if(!t||!b) return;
             let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
-            notes.unshift({ id: Date.now(), title: title, body: body, image: scannedImageBase64, date: new Date().toLocaleDateString() });
+            notes.unshift({ id: Date.now(), title: t, body: b, image: scannedImageBase64, date: new Date().toLocaleDateString() });
             localStorage.setItem('wsendy_notes', JSON.stringify(notes));
-
-            document.getElementById('note-title').value = "";
-            document.getElementById('note-body').value = "";
-            removeAttachedImage();
-            alert("Chapisho limehifadhiwa!");
-            document.querySelectorAll('.tab-btn')[2].click();
+            document.getElementById('note-title').value = ""; document.getElementById('note-body').value = ""; removeAttachedImage();
+            alert("Imehifadhiwa!"); document.querySelectorAll('.tab-btn')[3].click();
         }
-
         function loadNotesList() {
-            const listContainer = document.getElementById('notes-list');
-            let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
-            if (notes.length === 0) { listContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#999; font-size:13px;">Hakuna hati hapa.</p>'; return; }
-
-            listContainer.innerHTML = "";
-            notes.forEach(note => {
-                const card = document.createElement('div');
-                card.className = 'note-card';
-                card.onclick = () => {
-                    document.getElementById('note-title').value = note.title;
-                    document.getElementById('note-body').value = note.body;
-                    if (note.image) { scannedImageBase64 = note.image; document.getElementById('attached-scanned-img').src = note.image; document.getElementById('editor-image-preview').style.display = "block"; } else { removeAttachedImage(); }
-                    document.querySelectorAll('.tab-btn')[0].click();
-                };
-
-                let imgTag = note.image ? `<img src="${note.image}">` : '';
+            const container = document.getElementById('notes-list'); let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
+            if(notes.length===0) { container.innerHTML='<p style="text-align:center; padding:15px; color:#999; font-size:12px;">Hakuna hati.</p>'; return; }
+            container.innerHTML = "";
+            notes.forEach(n => {
+                let card = document.createElement('div'); card.className = 'note-card';
                 card.innerHTML = `
-                    <div class="card-actions">
-                        <button class="action-btn action-pdf" onclick="event.stopPropagation(); generatePDF('${note.title}', '${note.body}', '${note.image}', '${note.date}')">PDF 📄</button>
-                        <button class="action-btn action-del" onclick="event.stopPropagation(); deleteNote(${note.id})">Futa</button>
-                    </div>
-                    <h3>${note.title}</h3>
-                    <p style="font-size:11px; color:#0066CC; margin-bottom:5px;">${note.date}</p>
-                    <p style="font-size:13px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${note.body}</p>
-                    ${imgTag}
+                    <div style="float:right;"><button class="action-btn" onclick="event.stopPropagation(); deleteNote(${n.id})">Futa</button></div>
+                    <h4 style="font-size:14px;">${n.title}</h4><p style="font-size:10px; color:#666;">${n.date}</p>
+                    <p style="font-size:12px; margin-top:3px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${n.body}</p>
                 `;
-                listContainer.appendChild(card);
+                container.appendChild(card);
             });
         }
-
-        function deleteNote(id) {
-            if (confirm("Futa kabisa chapisho hili?")) {
-                let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || [];
-                localStorage.setItem('wsendy_notes', JSON.stringify(notes.filter(n => n.id !== id)));
-                loadNotesList();
-            }
-        }
+        function deleteNote(id) { if(confirm("Futa hati hii?")) { let notes = JSON.parse(localStorage.getItem('wsendy_notes')) || []; localStorage.setItem('wsendy_notes', JSON.stringify(notes.filter(n => n.id !== id))); loadNotesList(); } }
     </script>
 </body>
 </html>
