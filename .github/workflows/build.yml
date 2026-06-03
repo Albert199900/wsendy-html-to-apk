@@ -25,7 +25,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      # HAPA TUMEREKEBISHA ILI IFUTE MATUMIZI YA GRADLE 9.5.1 NA IWEKE GRADLE 8.7
       - name: Weka na Kusanidi Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -35,6 +34,11 @@ jobs:
         run: |
           sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
           sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
+
+      # SEHEMU MPYA: Inatengeneza faili la gradle.properties na kuwasha AndroidX kiotomatiki
+      - name: Weka Mipangilio ya AndroidX (Kutatua Kosa la AarMetadata)
+        run: |
+          echo "android.useAndroidX=true" >> gradle.properties
 
       - name: Weka Thamani za Kichora Icon (Pillow)
         run: pip install Pillow
