@@ -1,4 +1,4 @@
-name: Tengeneza APK
+name: Tengeneza APK (Debug Auto-Sign)
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         required: true
         default: 'AppYangu'
       package_id:
-        description: 'Weka ID ya kipekee ili ziweze kukaa nyingi kwenye simu moja (Mfano: com.wsendy.app1)'
+        description: 'Weka ID ya kipekee ili zikae nyingi kwenye simu (Mfano: com.wsendy.app1)'
         required: true
         default: 'com.wsendy.app1'
       fallback_url:
@@ -19,69 +19,71 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Pakua Code (Checkout)
-        uses: actions/checkout@v4
+    - name: Kushusha kodi kutoka Repository (Checkout)
+      uses: actions/checkout@v4
 
-      - name: Weka Java (JDK 17)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+    - name: Kuweka Java mazingira ya kazi (JDK 17)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
 
-      - name: Weka na Kusanidi Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
+    - name: Weka na Kusanidi Injini ya Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.7'
 
-      - name: Badilisha Jina la App, Link na ID ya Kipekee
-        run: |
-          # Badili jina la App
-          sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
-          
-          # Badili Link ya mtandao
-          sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
-          
-          # LIMESAHIHISHWA HAPA: app/build.gradle (sasa ina nukta sahihi)
-          sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
+    - name: Badilisha Jina la App, Link na ID ya Kipekee
+      run: |
+        # Badili jina la App kwenye strings.xml
+        sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
+        
+        # Badili Link ya mtandao kwenye MainActivity.java
+        sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
+        
+        # Badilisha Application ID kwa usahihi
+        sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
 
-      - name: Weka Mipangilio ya AndroidX (Kutatua Kosa la AarMetadata)
-        run: |
-          echo "android.useAndroidX=true" >> gradle.properties
+    - name: Weka Mipangilio ya AndroidX
+      run: |
+        echo "android.useAndroidX=true" >> gradle.properties
 
-      - name: Weka Thamani za Kichora Icon (Pillow)
-        run: pip install Pillow
+    - name: Weka Thamani za Kichora Icon (Pillow)
+      run: pip install Pillow
 
-      - name: Tengeneza Icon ya App Kiotomatiki
-        run: |
-          mkdir -p app/src/main/res/drawable
-          python -c "
-          from PIL import Image, ImageDraw, ImageFont
-          import os
+    - name: Tengeneza Icon ya App Kiotomatiki (Njano, Blue, Nyekundu & free wsendy)
+      run: |
+        mkdir -p app/src/main/res/drawable
+        python -c "
+        from PIL import Image, ImageDraw, ImageFont
+        import os
 
-          img = Image.new('RGB', (512, 512))
-          draw = ImageDraw.Draw(img)
+        img = Image.new('RGB', (512, 512))
+        draw = ImageDraw.Draw(img)
 
-          draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   
-          draw.rectangle([0, 170, 512, 342], fill='#0066CC') 
-          draw.rectangle([0, 342, 512, 512], fill='#CC3333') 
+        draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   
+        draw.rectangle([0, 170, 512, 342], fill='#0066CC') 
+        draw.rectangle([0, 342, 512, 512], fill='#CC3333') 
 
-          draw.rectangle([20, 210, 492, 310], fill='#111111')
+        draw.rectangle([20, 210, 492, 310], fill='#111111')
 
-          try:
-              font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 42)
-          except:
-              font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 42)
+        except:
+            font = ImageFont.load_default()
 
-          draw.text((256, 260), 'free wsendy', fill='#FFFFFF', anchor='mm', font=font)
-          img.save('app/src/main/res/drawable/ic_launcher.png')
-          "
+        draw.text((256, 260), 'free wsendy', fill='#FFFFFF', anchor='mm', font=font)
+        img.save('app/src/main/res/drawable/ic_launcher.png')
+        "
 
-      - name: Tengeneza na Kusaini APK (Build & Auto-Sign)
-        run: gradle assembleDebug
+    # HAPA NDIPO MFUMO UNAPOJISAINI WENYÈWE KIOTOMATIKI KAMA DEBUG
+    - name: Tengeneza na Kusaini APK (Build Debug)
+      run: gradle assembleDebug
 
-      - name: Pakia APK (Upload Artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.inputs.apk_name }}-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+    - name: Pakia APK Iliyokamilika (GitHub Artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.inputs.apk_name }}-Debug-APK
+        path: app/build/outputs/apk/debug/app-debug.apk
