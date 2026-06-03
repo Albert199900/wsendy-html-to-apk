@@ -7,6 +7,10 @@ on:
         description: 'Andika Jina la APK yako (Mfano: AppYangu)'
         required: true
         default: 'AppYangu'
+      package_id:
+        description: 'Weka ID ya kipekee ili ziweze kukaa nyingi kwenye simu moja (Mfano: com.wsendy.app1)'
+        required: true
+        default: 'com.wsendy.app1'
       fallback_url:
         description: 'Weka Link ya kufunguka kukiwa na Mtandao'
         required: true
@@ -30,12 +34,17 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Badilisha Jina la App na Link
+      - name: Badilisha Jina la App, Link na ID ya Kipekee
         run: |
+          # Badili jina la App
           sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
+          
+          # Badili Link ya mtandao
           sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
+          
+          # BADILISHA APPLICATION ID ILI ZIKUBALI KUKAA NYINGI KWENYE SIMU MOJA
+          sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build/gradle
 
-      # SEHEMU MPYA: Inatengeneza faili la gradle.properties na kuwasha AndroidX kiotomatiki
       - name: Weka Mipangilio ya AndroidX (Kutatua Kosa la AarMetadata)
         run: |
           echo "android.useAndroidX=true" >> gradle.properties
