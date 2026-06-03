@@ -89,9 +89,21 @@
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 122, 255, 0.2);
             transition: background 0.2s;
+            margin-bottom: 10px;
         }
-        .btn-tuma:active {
-            background-color: #0056b3;
+        .btn-online {
+            display: block;
+            width: 100%;
+            background-color: #34c759;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(52, 199, 89, 0.2);
+            margin-bottom: 20px;
         }
         .templates {
             margin-top: 20px;
@@ -114,70 +126,77 @@
             border-radius: 20px;
             font-size: 13px;
             cursor: pointer;
-            user-select: none;
-        }
-        .tag:active {
-            background-color: #ddd;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="status-badge">Njia ya Offline (Hakuna Mtandao)</div>
+        <!-- KITUFE MPYA CHA ONLINE KILICHOITIWA LINK -->
+        <a href="URL_PLACEHOLDER" class="btn-online">Nenda Mtandaoni (Online)</a>
+
+        <div class="status-badge">Njia ya Offline (Mazingira ya Ndani)</div>
         <h2>Ujumbe wa SMS</h2>
         <p class="subtitle">Tuma ujumbe wa kawaida bila kutumia internet.</p>
 
-        <!-- Sehemu ya kuweka namba -->
         <div class="form-group">
             <label for="namba">Namba ya Simu:</label>
             <input type="tel" id="namba" placeholder="Mfano: 0712345678" required>
         </div>
 
-        <!-- Sehemu ya kuandika ujumbe -->
         <div class="form-group">
             <label for="ujumbe">Ujumbe wako:</label>
             <textarea id="ujumbe" placeholder="Andika ujumbe wako hapa..." required></textarea>
         </div>
 
-        <!-- Kitufe cha kutuma -->
         <button class="btn-tuma" onclick="tumaSMS()">Fungua SMS Tuma</button>
 
-        <!-- Ujumbe wa Haraka (Templates) -->
+        <div class="form-group" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <label for="video-file">Pakia Video (Video Upload):</label>
+            <input type="file" id="video-file" accept="video/*" onchange="previewVideo()">
+        </div>
+
+        <div id="video-preview-area" style="display: none; margin-top: 15px; text-align: center;">
+            <p style="font-size: 14px; color: green; font-weight: bold; margin-bottom: 5px;">Video Imepakiwa Salama!</p>
+            <video id="kioo-cha-video" width="100%" controls style="border-radius: 8px; max-height: 250px; background: #000;"></video>
+        </div>
+
         <div class="templates">
-            <h3>Ujumbe wa Haraka (Gusa utumie):</h3>
+            <h3>Ujumbe wa Haraka:</h3>
             <div class="template-tags">
                 <span class="tag" onclick="wekaUjumbe('Nipigie tafadhali, niko offline.')">Nipigie</span>
                 <span class="tag" onclick="wekaUjumbe('Nimefika salama mahali nilipokuwa naenda.')">Nimefika Salama</span>
-                <span class="tag" onclick="wekaUjumbe('Niko njiani nakuja sasa hivi.')">Niko Njiani</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Kazi ya kuhamishia ujumbe wa haraka kwenye sanduku la maandishi
+        // JS ya Video Preview
+        function previewVideo() {
+            var fileInput = document.getElementById('video-file');
+            var previewArea = document.getElementById('video-preview-area');
+            var videoPlayer = document.getElementById('kioo-cha-video');
+            if (fileInput.files && fileInput.files[0]) {
+                videoPlayer.src = URL.createObjectURL(fileInput.files[0]);
+                previewArea.style.display = "block";
+            }
+        }
+
+        // JS ya Ujumbe wa Haraka
         function wekaUjumbe(maandishi) {
             document.getElementById('ujumbe').value = maandishi;
         }
 
-        // Kazi kuu ya kutuma SMS
+        // JS ya SMS uri
         function tumaSMS() {
             var namba = document.getElementById('namba').value.trim();
             var ujumbe = document.getElementById('ujumbe').value.trim();
-
             if (namba === "" || ujumbe === "") {
                 alert("Tafadhali jaza namba ya simu na ujumbe kwanza!");
                 return;
             }
-
-            // Hapa inatengeneza link ya ki-android ya kuanzisha SMS offline
-            // Format: sms:namba?body=ujumbe
-            var smsLink = "sms:" + namba + "?body=" + encodeURIComponent(ujumbe);
-            
-            // Inafungua app ya SMS ya simu papo hapo
-            window.location.href = smsLink;
+            window.location.href = "sms:" + namba + "?body=" + encodeURIComponent(ujumbe);
         }
     </script>
-
 </body>
 </html>
