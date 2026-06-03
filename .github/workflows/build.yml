@@ -42,8 +42,8 @@ jobs:
           # Badili Link ya mtandao
           sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
           
-          # BADILISHA APPLICATION ID ILI ZIKUBALI KUKAA NYINGI KWENYE SIMU MOJA
-          sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build/gradle
+          # LIMESAHIHISHWA HAPA: app/build.gradle (sasa ina nukta sahihi)
+          sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
 
       - name: Weka Mipangilio ya AndroidX (Kutatua Kosa la AarMetadata)
         run: |
