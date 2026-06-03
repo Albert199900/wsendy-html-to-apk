@@ -51,31 +51,12 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setBackgroundColor(Color.parseColor("#007AFF"));
         toolbar.setPadding(10, 10, 10, 10);
 
-        Button btnBack = new Button(this);
-        btnBack.setText("◀ Nyuma");
-        btnBack.setTextColor(Color.WHITE);
-        btnBack.setBackgroundColor(Color.TRANSPARENT);
+        Button btnBack = new Button(this); btnBack.setText("◀ Nyuma"); btnBack.setTextColor(Color.WHITE); btnBack.setBackgroundColor(Color.TRANSPARENT);
+        Button btnOnline = new Button(this); btnOnline.setText("🌐 Online"); btnOnline.setTextColor(Color.WHITE); btnOnline.setBackgroundColor(Color.TRANSPARENT);
+        final Button btnRefresh = new Button(this); btnRefresh.setText("🔄 Refresh"); btnRefresh.setTextColor(Color.WHITE); btnRefresh.setBackgroundColor(Color.TRANSPARENT); btnRefresh.setVisibility(View.GONE);
+        Button btnShare = new Button(this); btnShare.setText("🔗 Share"); btnShare.setTextColor(Color.WHITE); btnShare.setBackgroundColor(Color.TRANSPARENT);
 
-        Button btnOnline = new Button(this);
-        btnOnline.setText("🌐 Online");
-        btnOnline.setTextColor(Color.WHITE);
-        btnOnline.setBackgroundColor(Color.TRANSPARENT);
-
-        final Button btnRefresh = new Button(this);
-        btnRefresh.setText("🔄 Refresh");
-        btnRefresh.setTextColor(Color.WHITE);
-        btnRefresh.setBackgroundColor(Color.TRANSPARENT);
-        btnRefresh.setVisibility(View.GONE);
-
-        Button btnShare = new Button(this);
-        btnShare.setText("🔗 Share");
-        btnShare.setTextColor(Color.WHITE);
-        btnShare.setBackgroundColor(Color.TRANSPARENT);
-
-        toolbar.addView(btnBack);
-        toolbar.addView(btnOnline);
-        toolbar.addView(btnRefresh);
-        toolbar.addView(btnShare);
+        toolbar.addView(btnBack); toolbar.addView(btnOnline); toolbar.addView(btnRefresh); toolbar.addView(btnShare);
 
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
@@ -83,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setGeolocationEnabled(true);
         webSettings.setAllowFileAccess(true);
+        
+        // RUHUSU VIDEO KURENDER BILA KUZUIWA
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
 
         webView.addJavascriptInterface(new WebAppInterface(this), "Android");
 
@@ -90,11 +74,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (url.startsWith("file:///")) {
-                    btnRefresh.setVisibility(View.GONE);
-                } else {
-                    btnRefresh.setVisibility(View.VISIBLE);
-                }
+                if (url.startsWith("file:///")) { btnRefresh.setVisibility(View.GONE); } else { btnRefresh.setVisibility(View.VISIBLE); }
             }
         });
         
@@ -135,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         Context mContext;
         WebAppInterface(Context c) { mContext = c; }
 
+        // // SMS_START
         @JavascriptInterface
         public void wekaDefaultSmsApp() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -142,37 +123,10 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
                     intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, mContext.getPackageName());
                     mContext.startActivity(intent);
-                } else {
-                    Toast.makeText(mContext, "App hii tayari ni Default SMS App!", Toast.LENGTH_SHORT).show();
-                }
+                } else { Toast.makeText(mContext, "App hii tayari ni Default SMS App!", Toast.LENGTH_SHORT).show(); }
             }
         }
 
-        @JavascriptInterface
-        public String pataMajinaYaSimu() {
-            JSONArray contactsArray = new JSONArray();
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-                Cursor cursor = mContext.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-                if (cursor != null) {
-                    try {
-                        while (cursor.moveToNext()) {
-                            int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-                            int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                            if (nameIndex != -1 && numberIndex != -1) {
-                                JSONObject contact = new JSONObject();
-                                contact.put("name", cursor.getString(nameIndex));
-                                contact.put("number", cursor.getString(numberIndex));
-                                contactsArray.put(contact);
-                            }
-                        }
-                    } catch (Exception e) { e.printStackTrace(); }
-                    cursor.close();
-                }
-            }
-            return contactsArray.toString();
-        }
-
-        // SEHEMU MPYA: Inavuta SMS halisi kutoka kwenye Inbox au Sent za simu yako
         @JavascriptInterface
         public String pataSmsZilizopo(String folderType) {
             JSONArray smsArray = new JSONArray();
@@ -181,19 +135,13 @@ public class MainActivity extends AppCompatActivity {
                 Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, "date DESC");
                 if (cursor != null) {
                     try {
-                        int limit = 40; // Kuzuia app kuelemewa na meseji elfu nne
-                        int count = 0;
+                        int limit = 40; int count = 0;
                         while (cursor.moveToNext() && count < limit) {
-                            String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-                            String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
-                            long dateLong = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
-                            
                             JSONObject sms = new JSONObject();
-                            sms.put("number", address);
-                            sms.put("body", body);
-                            sms.put("date", new Date(dateLong).toLocaleString());
-                            smsArray.put(sms);
-                            count++;
+                            sms.put("number", cursor.getString(cursor.getColumnIndexOrThrow("address")));
+                            sms.put("body", cursor.getString(cursor.getColumnIndexOrThrow("body")));
+                            sms.put("date", new Date(cursor.getLong(cursor.getColumnIndexOrThrow("date"))).toLocaleString());
+                            smsArray.put(sms); count++;
                         }
                     } catch (Exception e) { e.printStackTrace(); }
                     cursor.close();
@@ -205,29 +153,24 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void tumaSmsMojaKwaMoja(String namba, String ujumbe) {
             try {
-                SmsManager smsManager;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    smsManager = mContext.getSystemService(SmsManager.class);
-                } else {
-                    smsManager = SmsManager.getDefault();
-                }
-                // Tuma ujumbe halisi
+                SmsManager smsManager = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) ? mContext.getSystemService(SmsManager.class) : SmsManager.getDefault();
                 smsManager.sendTextMessage(namba, null, ujumbe, null, null);
-                Toast.makeText(mContext, "Ujumbe umesafirishwa! (Report: Success)", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(mContext, "Report: Imefeli! " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+                Toast.makeText(mContext, "Ujumbe umesafirishwa!", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) { Toast.makeText(mContext, "Imefeli: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
         }
+        // // SMS_END
     }
 
     private void ombaRuhusaZaSimu() {
-        String[] permissions = { 
-            Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, 
-            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.READ_CONTACTS, Manifest.permission.SEND_SMS, 
-            Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS 
-        };
-        if (!hasPermissions(this, permissions)) { ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE); }
+        // // SMS_START
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS };
+            if (!hasPermissions(this, permissions)) { ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE); }
+            return;
+        }
+        // // SMS_END
+        String[] normalPermissions = { Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION };
+        if (!hasPermissions(this, normalPermissions)) { ActivityCompat.requestPermissions(this, normalPermissions, PERMISSION_REQUEST_CODE); }
     }
 
     private boolean hasPermissions(Context context, String... permissions) {
