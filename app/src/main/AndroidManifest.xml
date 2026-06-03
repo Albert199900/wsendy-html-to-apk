@@ -15,6 +15,7 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -38,33 +39,9 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".SmsReceiver"
-            android:permission="android.permission.BROADCAST_SMS"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_DELIVER" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".MmsReceiver"
-            android:permission="android.permission.BROADCAST_WAP_PUSH"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
-                <data android:mimeType="application/vnd.wap.mms-message" />
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".HeadlessSmsSendService"
-            android:permission="android.permission.SEND_RESPOND_VIA_SMS"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.RESPOND_VIA_SMS" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="sms" />
-                <data android:scheme="smsto" />
-            </intent-filter>
-        </service>
+        <receiver android:name=".SmsReceiver" android:permission="android.permission.BROADCAST_SMS" android:exported="true"><intent-filter><action android:name="android.provider.Telephony.SMS_DELIVER" /></intent-filter></receiver>
+        <receiver android:name=".MmsReceiver" android:permission="android.permission.BROADCAST_WAP_PUSH" android:exported="true"><intent-filter><action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" /><data android:mimeType="application/vnd.wap.mms-message" /></intent-filter></receiver>
+        <service android:name=".HeadlessSmsSendService" android:permission="android.permission.SEND_RESPOND_VIA_SMS" android:exported="true"><intent-filter><action android:name="android.intent.action.RESPOND_VIA_SMS" /><category android:name="android.intent.category.DEFAULT" /><data android:scheme="sms" /><data android:scheme="smsto" /></intent-filter></service>
 
     </application>
 </manifest>
