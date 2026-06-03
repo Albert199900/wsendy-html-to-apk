@@ -25,15 +25,17 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Weka Gradle
-        uses: gradle/gradle-build-action@v2
+      # HAPA TUMEREKEBISHA ILI IFUTE MATUMIZI YA GRADLE 9.5.1 NA IWEKE GRADLE 8.7
+      - name: Weka na Kusanidi Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
       - name: Badilisha Jina la App na Link
         run: |
           sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
           sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
-      # SEHEMU MPYA: INATENGENEZA ICON YA NJANO, BLUE, NYEKUNDU NA TEXT YA FREE WSENDY
       - name: Weka Thamani za Kichora Icon (Pillow)
         run: pip install Pillow
 
@@ -44,28 +46,21 @@ jobs:
           from PIL import Image, ImageDraw, ImageFont
           import os
 
-          # Tengeneza picha ya vipimo vya Icon (512x512)
           img = Image.new('RGB', (512, 512))
           draw = ImageDraw.Draw(img)
 
-          # Chora Rangi Tatu (Njano, Blue, Nyekundu)
-          draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   # Njano (Juu)
-          draw.rectangle([0, 170, 512, 342], fill='#0066CC') # Blue (Katikati)
-          draw.rectangle([0, 342, 512, 512], fill='#CC3333') # Nyekundu (Chini)
+          draw.rectangle([0, 0, 512, 170], fill='#FFCC00')   
+          draw.rectangle([0, 170, 512, 342], fill='#0066CC') 
+          draw.rectangle([0, 342, 512, 512], fill='#CC3333') 
 
-          # Weka kibandiko cha giza katikati ili maandishi yasomeke vizuri sana
           draw.rectangle([20, 210, 492, 310], fill='#111111')
 
-          # Weka Maandishi ya 'free wsendy'
           try:
               font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 42)
           except:
               font = ImageFont.load_default()
 
-          # Andika maneno kwa rangi Nyeupe yenye mng'ao
           draw.text((256, 260), 'free wsendy', fill='#FFFFFF', anchor='mm', font=font)
-
-          # Hifadhi kwenye folda la rasilimali za App
           img.save('app/src/main/res/drawable/ic_launcher.png')
           "
 
