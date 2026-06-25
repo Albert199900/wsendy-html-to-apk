@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       apk_name:
-        description: 'Andika Jina la APK yako (Mfano: NotepadPro)'
+        description: 'Andika Jina la APK yako'
         required: true
         default: 'NotepadPro'
       package_id:
-        description: 'Weka ID ya kipekee (Mfano: com.wsendy.notepad)'
+        description: 'Weka ID ya kipekee'
         required: true
         default: 'com.wsendy.notepad'
       icon_text:
@@ -20,9 +20,12 @@ on:
         required: true
         default: 'no'
       fallback_url:
-        description: 'Weka Link ya kufunguka kukiwa na Mtandao'
+        description: 'Mchanganyiko wa Link na HTML kutoka kwenye fomu'
         required: true
         default: 'https://google.com'
+      user_email: # Tumeongeza hii kwa ajili ya Gmail ya mteja
+        description: 'Email ya Mteja'
+        required: true
 
 jobs:
   build:
@@ -43,20 +46,37 @@ jobs:
       with:
         gradle-version: '8.7'
 
+    # SULUHISHO LA BASE64: Inatenganisha URL ya Online na kodi za HTML bila makosa ya Linux
+    - name: Tenganisha URL na Extract HTML za Ndani
+      run: |
+        mkdir -p app/src/main/assets
+        
+        cat << 'EOF' > mchanganyiko.txt
+        ${{ github.event.inputs.fallback_url }}
+        EOF
+        
+        if grep -q "HTML_DATA_START" mchanganyiko.txt; then
+          REAL_URL=$(sed 's/HTML_DATA_START.*//' mchanganyiko.txt)
+          echo "ONLINE_URL=$REAL_URL" >> $GITHUB_ENV
+          
+          sed 's/.*HTML_DATA_START//' mchanganyiko.txt | base64 -d > html_project.zip
+          unzip -o html_project.zip -d app/src/main/assets/
+        else
+          echo "ONLINE_URL=${{ github.event.inputs.fallback_url }}" >> $GITHUB_ENV
+        fi
+
     - name: Badilisha Jina la App, Link na ID ya Kipekee
       run: |
         sed -i "s/JINA_LA_APP/${{ github.event.inputs.apk_name }}/g" app/src/main/res/values/strings.xml
         sed -i "s/applicationId \"com.example.hybridapp\"/applicationId \"${{ github.event.inputs.package_id }}\"/g" app/build.gradle
-        sed -i "s|URL_PLACEHOLDER|${{ github.event.inputs.fallback_url }}|g" app/src/main/java/com/example/hybridapp/MainActivity.java
+        sed -i "s|URL_PLACEHOLDER|$ONLINE_URL|g" app/src/main/java/com/example/hybridapp/MainActivity.java
 
-    # IMEREKEBISHWA HAPA: Inatumia Python kusafisha kodi zote za SMS bila kutumia sed, kuzuia kabisa kufeli kwa makosa ya mifumo
     - name: Kudhibiti Ruhusa na Kodi za SMS (Anti-Block Filter)
       if: ${{ github.event.inputs.andika_sms == 'no' }}
       run: |
         cat << 'EOF' > clean_sms.py
         import os
 
-        # 1. Safisha Manifest (Ondoa ruhusa na receiver za SMS)
         manifest_path = 'app/src/main/AndroidManifest.xml'
         if os.path.exists(manifest_path):
             with open(manifest_path, 'r', encoding='utf-8') as f:
@@ -66,7 +86,6 @@ jobs:
                     if not any(x in line for x in ['SMS', 'CONTACTS', 'SmsReceiver', 'MmsReceiver', 'HeadlessSmsSendService']):
                         f.write(line)
 
-        # 2. Safisha Java (Futa block nzima ya SMS)
         java_path = 'app/src/main/java/com/example/hybridapp/MainActivity.java'
         if os.path.exists(java_path):
             with open(java_path, 'r', encoding='utf-8') as f:
@@ -78,28 +97,18 @@ jobs:
             with open(java_path, 'w', encoding='utf-8') as f:
                 f.write(content)
 
-        # 3. Safisha HTML (Futa tab yote ya SMS kwenye muonekano)
         html_path = 'app/src/main/assets/index.html'
         if os.path.exists(html_path):
             with open(html_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            if '' in content and '' in content:
-                start_idx = content.find('')
-                end_idx = content.find('') + len('')
+            if 'SMS_TAB_START' in content and 'SMS_TAB_END' in content:
+                start_idx = content.find('SMS_TAB_START')
+                end_idx = content.find('SMS_TAB_END') + len('SMS_TAB_END')
                 content = content[:start_idx] + content[end_idx:]
             with open(html_path, 'w', encoding='utf-8') as f:
                 f.write(content)
         EOF
         python3 clean_sms.py
-
-    - name: Weka Mipangilio ya AndroidX
-      run: |
-        echo "android.useAndroidX=true" >> gradle.properties
-
-    - name: Pakia Library ya jsPDF kwa ajili ya PDF Offline Converter
-      run: |
-        mkdir -p app/src/main/assets
-        curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 
     - name: Weka Thamani za Kichora Icon (Pillow)
       run: pip install Pillow
@@ -109,7 +118,7 @@ jobs:
         PASSED_ICON_TEXT: ${{ github.event.inputs.icon_text }}
       run: |
         mkdir -p app/src/main/res/drawable
-        python -c "
+        python3 -c "
         from PIL import Image, ImageDraw, ImageFont
         import os
 
@@ -132,11 +141,40 @@ jobs:
         img.save('app/src/main/res/drawable/ic_launcher.png')
         "
 
+    - name: Weka Mipangilio ya AndroidX
+      run: echo "android.useAndroidX=true" >> gradle.properties
+
+    - name: Pakia Library ya jsPDF kwa ajili ya PDF Offline Converter
+      run: |
+        mkdir -p app/src/main/assets
+        curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
+
     - name: Tengeneza na Kusaini APK (Build Debug)
-      run: gradle assembleDebug
+      run: ./gradlew assembleDebug
 
     - name: Pakia APK Iliyokamilika (GitHub Artifact)
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.event.inputs.apk_name }}-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: Official-Debug-APK
+        path: app/build/outputs/apk/debug/*.apk
+
+    # UNGANIRO LA GMAIL: Inatuma APK iliyoundwa moja kwa moja kwenye email ya mteja
+    - name: Tuma APK kwa Email ya Mteja
+      uses: dawidd6/action-send-mail@v4
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: APK ya ${{ github.event.inputs.apk_name }} Ipo Tayari!
+        to: ${{ github.event.inputs.user_email }}
+        from: Wsendy Multi-Builder <${{ secrets.EMAIL_USERNAME }}>
+        body: |
+          Habari,
+          
+          Mchakato wa kutengeneza App yako ya "${{ github.event.inputs.apk_name }}" umekamilika kikamilifu.
+          
+          Tumekuwekea faili la APK (Debug Package) kwenye kiambatisho cha barua pepe hii. Pakua na uisakinishe kwenye simu yako sasa hivi.
+          
+          Asante kwa kutumia huduma ya WSendy Turbo!
+        attachments: app/build/outputs/apk/debug/*.apk
