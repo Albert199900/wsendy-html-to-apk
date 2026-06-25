@@ -23,7 +23,7 @@ on:
         description: 'Mchanganyiko wa Link na HTML kutoka kwenye fomu'
         required: true
         default: 'https://google.com'
-      user_email: # Tumeongeza hii kwa ajili ya Gmail ya mteja
+      user_email:
         description: 'Email ya Mteja'
         required: true
 
@@ -41,12 +41,13 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Weka na Kusanidi Injini ya Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: '8.7'
+    # SULUHISHO LA ERROR 127: Inatengeneza injini ya gradlew kama haipo kwenye mradi wako
+    - name: Kusanidi na Kuunda Injini mpya ya Gradle Wrapper
+      run: |
+        gradle wrapper --gradle-version 8.7
+        chmod +x gradlew
 
-    # SULUHISHO LA BASE64: Inatenganisha URL ya Online na kodi za HTML bila makosa ya Linux
+    # Inatenganisha URL ya Online na kodi za HTML bila makosa ya Linux
     - name: Tenganisha URL na Extract HTML za Ndani
       run: |
         mkdir -p app/src/main/assets
@@ -149,6 +150,7 @@ jobs:
         mkdir -p app/src/main/assets
         curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
 
+    # Sasa hivi ita-run kwa uhakika kwa sababu tumeshatengeneza ./gradlew hapo juu
     - name: Tengeneza na Kusaini APK (Build Debug)
       run: ./gradlew assembleDebug
 
@@ -158,7 +160,6 @@ jobs:
         name: Official-Debug-APK
         path: app/build/outputs/apk/debug/*.apk
 
-    # UNGANIRO LA GMAIL: Inatuma APK iliyoundwa moja kwa moja kwenye email ya mteja
     - name: Tuma APK kwa Email ya Mteja
       uses: dawidd6/action-send-mail@v4
       with:
