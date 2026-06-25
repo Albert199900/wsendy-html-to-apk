@@ -41,13 +41,11 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    # SULUHISHO LA ERROR 127: Inatengeneza injini ya gradlew kama haipo kwenye mradi wako
     - name: Kusanidi na Kuunda Injini mpya ya Gradle Wrapper
       run: |
         gradle wrapper --gradle-version 8.7
         chmod +x gradlew
 
-    # Inatenganisha URL ya Online na kodi za HTML bila makosa ya Linux
     - name: Tenganisha URL na Extract HTML za Ndani
       run: |
         mkdir -p app/src/main/assets
@@ -150,7 +148,6 @@ jobs:
         mkdir -p app/src/main/assets
         curl -L -o app/src/main/assets/jspdf.min.js https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
 
-    # Sasa hivi ita-run kwa uhakika kwa sababu tumeshatengeneza ./gradlew hapo juu
     - name: Tengeneza na Kusaini APK (Build Debug)
       run: ./gradlew assembleDebug
 
@@ -160,6 +157,7 @@ jobs:
         name: Official-Debug-APK
         path: app/build/outputs/apk/debug/*.apk
 
+    # SULUHISHO LA GMAIL BLOCK: Inatuma kama link ya maandishi, itapita bila kuzuiliwa
     - name: Tuma APK kwa Email ya Mteja
       uses: dawidd6/action-send-mail@v4
       with:
@@ -175,7 +173,10 @@ jobs:
           
           Mchakato wa kutengeneza App yako ya "${{ github.event.inputs.apk_name }}" umekamilika kikamilifu.
           
-          Tumekuwekea faili la APK (Debug Package) kwenye kiambatisho cha barua pepe hii. Pakua na uisakinishe kwenye simu yako sasa hivi.
+          Bofya kiungo (link) kilicho chini ili kupakua faili lako la App moja kwa moja kwenye simu yako:
+          
+          👉 https://nightly.link/${{ github.repository }}/actions/artifacts/${{ github.run_id }}.zip
+          
+          (Ukisha-download kupitia link hiyo, fungua/unzip hilo faili kwenye simu yako kisha install APK iliyomo ndani).
           
           Asante kwa kutumia huduma ya WSendy Turbo!
-        attachments: app/build/outputs/apk/debug/*.apk
