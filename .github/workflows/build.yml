@@ -151,13 +151,20 @@ jobs:
     - name: Tengeneza na Kusaini APK (Build Debug)
       run: ./gradlew assembleDebug
 
-    - name: Pakia APK Iliyokamilika (GitHub Artifact)
-      uses: actions/upload-artifact@v4
+    # MTAMBO UNATENGENEZA RELEASE SAFHI YA GITHUB KIOTOMATIKI
+    - name: Unda GitHub Release na Pakia APK
+      id: create_release
+      uses: softprops/action-gh-release@v2
       with:
-        name: Official-Debug-APK
-        path: app/build/outputs/apk/debug/*.apk
+        tag_name: "v-${{ github.run_id }}"
+        name: "Release ya ${{ github.event.inputs.apk_name }}"
+        draft: false
+        prerelease: false
+        files: app/build/outputs/apk/debug/*.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # SULUHISHO LA GMAIL BLOCK: Inatuma kama link ya maandishi, itapita bila kuzuiliwa
+    # TUMA EMAIL YENYE DIRECT DOWNLOAD LINK YA APK (BILA ZIP)
     - name: Tuma APK kwa Email ya Mteja
       uses: dawidd6/action-send-mail@v4
       with:
@@ -171,12 +178,10 @@ jobs:
         body: |
           Habari,
           
-          Mchakato wa kutengeneza App yako ya "${{ github.event.inputs.apk_name }}" umekamilika kikamilifu.
+          Mchakato wa kutengeneza App yako ya "${{ github.event.inputs.apk_name }}" kwa kutumia kodi za HTML na Online URL umekamilika kikamilifu.
           
-          Bofya kiungo (link) kilicho chini ili kupakua faili lako la App moja kwa moja kwenye simu yako:
+          Bofya link iliyo chini ili kupakua (Download) faili lako la APK moja kwa moja kwenye simu yako:
           
-          👉 https://nightly.link/${{ github.repository }}/actions/artifacts/${{ github.run_id }}.zip
-          
-          (Ukisha-download kupitia link hiyo, fungua/unzip hilo faili kwenye simu yako kisha install APK iliyomo ndani).
+          👉 https://github.com/${{ github.repository }}/releases/download/v-${{ github.run_id }}/app-debug.apk
           
           Asante kwa kutumia huduma ya WSendy Turbo!
